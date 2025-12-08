@@ -1,0 +1,83 @@
+
+████████████████████████████████████████████████████████████████████████████████
+██                                                                            ██
+██                          ██╗    ██╗██╗   ██╗                               ██
+██                          ██║    ██║██║   ██║                               ██
+██                          ██║ █╗ ██║██║   ██║                               ██
+██                          ██║███╗██║██║   ██║                               ██
+██                          ╚███╔███╔╝╚██████╔╝                               ██
+██                           ╚══╝╚══╝  ╚═════╝                                ██
+██                                                                            ██
+██                         WU-TANG SWORD STYLE                                ██
+██                        BRING DA RUCKUS                                     ██
+██                   Network Chaos Engineering Tool                           ██
+██                        36 Chambers of Chaos                                ██
+██                                                                            ██
+██                    Created by Jake Mammen - 2025                           ██
+██                                                                            ██
+████████████████████████████████████████████████████████████████████████████████
+
+                  ☯️  PEACE → 🥋 SWARM → ⚔️  MYSTERY
+                         ↓         ↓         ↓
+                  🔥 VENOMS → 💀 SWORDS → ☠️  SHADOW
+
+════════════════════════════════════════════════════════════════════════════════
+
+DISCLAIMER:
+    Wu-Tang is for the children, but with great power comes great responsibility.
+
+    This software is designed for LEGITIMATE NETWORK TESTING AND CHAOS ENGINEERING
+    purposes only. It is intended to help engineers test system resilience and
+    identify weaknesses in controlled environments.
+
+    DO NOT use this tool for:
+    - Malicious attacks on networks you don't own/control
+    - Disrupting production systems without authorization
+    - Any illegal or unethical activities
+    - Harming others or their infrastructure
+
+    By using this software, you agree to:
+    - Use it only on networks you own or have explicit permission to test
+    - Accept full responsibility for any consequences of its use
+    - Comply with all applicable laws and regulations
+    - Not hold the authors liable for any misuse
+
+    Remember: Real ninjas test responsibly. Protect ya neck, and protect your network.
+
+    🥷 RESPECT THE CRAFT. TEST WITH PURPOSE. BRING DA RUCKUS RESPONSIBLY. 🥷
+
+════════════════════════════════════════════════════════════════════════════════
+
+THE 36 CHAMBERS:
+
+  1. ☯️  Chamber 0: Peace                    (Baseline - No disruption)
+  2. 🥋 Chamber 1: The Swarm                 (50ms, 1% loss, 50 Mbps)
+  3. ⚔️  Chamber 9: The Mystery              (150ms, 3% loss, 10 Mbps)
+  4. 🔥 Chamber 18: The Deadly Venoms        (300ms, 8% loss, 2 Mbps)
+  5. 💀 Chamber 36: Liquid Swords            (500ms, 15% loss, 512 Kbps)
+  6. ☠️  Shaolin Shadow: Total Darkness      (100% packet loss)
+
+════════════════════════════════════════════════════════════════════════════════
+
+USAGE:
+
+  sudo python3 bring-da-ruckus.py                    # Interactive mode
+  sudo python3 bring-da-ruckus.py --level first      # Chamber 1: The Swarm
+  sudo python3 bring-da-ruckus.py --level ninth      # Chamber 9: The Mystery
+  sudo python3 bring-da-ruckus.py --level shaolin    # Shaolin Shadow
+
+INTERACTIVE COMMANDS:
+
+  1-6  - Select chamber
+  s    - Show status
+  c    - Clear all ruckus (restore peace)
+  d    - Show detailed tc configuration
+  i    - Set network interface
+  q    - Quit and clean up
+
+════════════════════════════════════════════════════════════════════════════════
+
+                    "C.R.E.A.M. - Chaos Rules Everything Around Me"
+                           Enter the 36 Chambers. Protect ya neck. Bring da ruckus.
+
+════════════════════════════════════════════════════════════════════════════════
