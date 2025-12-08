@@ -60,6 +60,7 @@ import sys
 import time
 import threading
 import argparse
+import select
 from datetime import datetime, timedelta
 from typing import Optional, Dict
 import os
@@ -137,6 +138,7 @@ class DeadmanSwitch:
         self.last_activity = datetime.now()
         self.running = False
         self.thread = None
+        self.warned = False
 
     def reset(self):
         """Reset the timer - call this on any user activity"""
@@ -155,18 +157,57 @@ class DeadmanSwitch:
     def _monitor(self):
         """Background monitoring thread"""
         while self.running:
-            time.sleep(10)  # Check every 10 seconds
-            elapsed = (datetime.now() - self.last_activity).total_seconds() / 60
-            if elapsed >= self.timeout_minutes:
-                print(f"\n⏰ Deadman's switch triggered after {self.timeout_minutes} minutes of inactivity!")
-                self.callback()
-                break
+            time.sleep(5)  # Check every 5 seconds
+            elapsed = (datetime.now() - self.last_activity).total_seconds()
+            elapsed_minutes = elapsed / 60
+            
+            # Warning at 30 seconds before timeout
+            if not self.warned and elapsed >= (self.timeout_minutes * 60 - 30):
+                self.warned = True
+                print(f"\n\n⚠️  WARNING: Deadman's switch will trigger in 30 seconds!")
+                print("Continue testing? (Y/N): ", end='', flush=True)
+                
+                # Start a thread to wait for input
+                import select
+                import sys
+                
+                # Non-blocking input check for 30 seconds
+                start_wait = datetime.now()
+                user_responded = False
+                
+                while (datetime.now() - start_wait).total_seconds() < 30:
+                    if sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
+                        response = sys.stdin.readline().strip().upper()
+                        if response == 'Y' or response == 'YES':
+                            print("✅ Timer reset! Continuing for another {0} minutes.".format(self.timeout_minutes))
+                            self.reset()
+                            self.warned = False
+                            user_responded = True
+                            break
+                        else:
+                            print("🛑 Stopping chaos...")
+                            self.callback()
+                            return
+                    time.sleep(0.5)
+                
+                # If no response after 30 seconds, trigger callback
+                if not user_responded:
+                    print("\n\n⏰ No response - Deadman's switch triggered!")
+                    self.callback()
+                    break
+            
+            # Final timeout check
+            elif elapsed_minutes >= self.timeout_minutes:
+                if not self.warned:  # Direct timeout without warning
+                    print(f"\n⏰ Deadman's switch triggered after {self.timeout_minutes} minutes of inactivity!")
+                    self.callback()
+                    break
 
 
 class NetworkRuckus:
     """Main class for managing network chaos on Ubuntu Server using tc (traffic control)"""
 
-    def __init__(self, interface: Optional[str] = None, deadman_timeout: int = 30):
+    def __init__(self, interface: Optional[str] = None, deadman_timeout: int = 5):
         self.interface = interface
         self.current_chamber = ChaosChamber.PEACE
         self.is_active = False
