@@ -213,6 +213,8 @@ class NetworkRuckus:
         self.is_active = False
         self.deadman = DeadmanSwitch(deadman_timeout, self._emergency_stop)
         self.target_ip = None
+        self.scope = 'local'  # 'local', 'network', or 'targeted'
+        self.gateway_configured = False
 
     def detect_interface(self):
         """Auto-detect the primary network interface"""
@@ -247,10 +249,59 @@ class NetworkRuckus:
         return "eth0"  # Final fallback
 
     def set_target(self, ip: str):
-        """Set specific target IP for disruption (optional - for future implementation)"""
+        """Set specific target IP for disruption"""
         self.target_ip = ip
+        self.scope = 'targeted'
         print(f"🎯 Target set to: {ip}")
-        print("   Note: Currently affects all traffic on interface")
+        print("   Chaos will only affect traffic to/from this IP")
+
+    def set_scope(self, scope: str):
+        """Set the scope of network disruption"""
+        if scope not in ['local', 'network', 'targeted']:
+            print("❌ Invalid scope. Use 'local', 'network', or 'targeted'")
+            return False
+        
+        self.scope = scope
+        
+        if scope == 'network':
+            # Check if IP forwarding is enabled
+            try:
+                result = subprocess.run(
+                    ["sysctl", "net.ipv4.ip_forward"],
+                    capture_output=True, text=True, check=True
+                )
+                if "net.ipv4.ip_forward = 0" in result.stdout:
+                    print("\n⚠️  IP forwarding is disabled. Network-wide chaos requires this server to act as a gateway.")
+                    response = input("Enable IP forwarding now? (Y/N): ").strip().upper()
+                    if response == 'Y' or response == 'YES':
+                        subprocess.run(["sysctl", "-w", "net.ipv4.ip_forward=1"], check=True)
+                        # Set up NAT
+                        subprocess.run(
+                            f"iptables -t nat -A POSTROUTING -o {self.interface} -j MASQUERADE",
+                            shell=True, check=True
+                        )
+                        self.gateway_configured = True
+                        print("✅ IP forwarding enabled. This server is now acting as a gateway.")
+                        print("   Configure devices to use this server's IP as their gateway.")
+                    else:
+                        print("❌ Network-wide chaos requires IP forwarding. Reverting to local scope.")
+                        self.scope = 'local'
+                        return False
+                else:
+                    self.gateway_configured = True
+                    print("✅ IP forwarding already enabled")
+            except Exception as e:
+                print(f"❌ Failed to configure IP forwarding: {e}")
+                self.scope = 'local'
+                return False
+        
+        scope_names = {
+            'local': '🖥️  Local Device Only',
+            'network': '🌐 Entire Network (Gateway Mode)',
+            'targeted': '🎯 Targeted IP'
+        }
+        print(f"\n📍 Scope set to: {scope_names[scope]}")
+        return True
 
     def apply_ruckus(self, level: Dict):
         """Apply network disruption using Linux tc (traffic control)"""
@@ -262,19 +313,29 @@ class NetworkRuckus:
         # Clear existing rules first
         subprocess.run(f"tc qdisc del dev {self.interface} root",
                       shell=True, stderr=subprocess.DEVNULL)
+        subprocess.run(f"tc filter del dev {self.interface}",
+                      shell=True, stderr=subprocess.DEVNULL)
 
         if level['packet_loss_pct'] == 100:
-            # Complete outage - drop all packets
-            cmd = f"tc qdisc add dev {self.interface} root netem loss 100%"
-            try:
+            # Complete outage
+            if self.scope == 'targeted' and self.target_ip:
+                # Targeted outage using iptables
+                subprocess.run(f"iptables -A INPUT -s {self.target_ip} -j DROP", shell=True, check=True)
+                subprocess.run(f"iptables -A OUTPUT -d {self.target_ip} -j DROP", shell=True, check=True)
+                print(f"   ☠️  Complete outage for {self.target_ip}")
+            else:
+                cmd = f"tc qdisc add dev {self.interface} root netem loss 100%"
                 subprocess.run(cmd, shell=True, check=True)
-                print(f"   ☠️  Complete network outage on {self.interface}")
-            except subprocess.CalledProcessError as e:
-                print(f"   ❌ Failed to apply outage: {e}")
-                return False
+                scope_msg = "entire network" if self.scope == 'network' else "this device"
+                print(f"   ☠️  Complete network outage on {self.interface} ({scope_msg})")
 
         elif level == ChaosChamber.PEACE:
-            # No disruption - already cleared
+            # Clear iptables rules too
+            if self.target_ip:
+                subprocess.run(f"iptables -D INPUT -s {self.target_ip} -j DROP", 
+                             shell=True, stderr=subprocess.DEVNULL)
+                subprocess.run(f"iptables -D OUTPUT -d {self.target_ip} -j DROP", 
+                             shell=True, stderr=subprocess.DEVNULL)
             print(f"   ✅ All disruptions cleared on {self.interface}")
             print(f"   ☯️  Network has returned to peace")
 
@@ -292,10 +353,28 @@ class NetworkRuckus:
 
             # Apply netem for latency/loss/jitter
             if params:
-                cmd = f"tc qdisc add dev {self.interface} root netem {' '.join(params)}"
                 try:
-                    subprocess.run(cmd, shell=True, check=True)
-                    print(f"   ✅ Applied on interface: {self.interface}")
+                    if self.scope == 'targeted' and self.target_ip:
+                        # Use tc with filters for targeted disruption
+                        # Create root qdisc with prio
+                        subprocess.run(f"tc qdisc add dev {self.interface} root handle 1: prio", 
+                                     shell=True, check=True)
+                        # Add netem to band 1
+                        cmd = f"tc qdisc add dev {self.interface} parent 1:1 handle 10: netem {' '.join(params)}"
+                        subprocess.run(cmd, shell=True, check=True)
+                        # Filter traffic to target IP
+                        subprocess.run(
+                            f"tc filter add dev {self.interface} protocol ip parent 1:0 prio 1 u32 match ip dst {self.target_ip} flowid 1:1",
+                            shell=True, check=True
+                        )
+                        print(f"   ✅ Applied to traffic targeting: {self.target_ip}")
+                    else:
+                        # Standard application for local or network-wide
+                        cmd = f"tc qdisc add dev {self.interface} root netem {' '.join(params)}"
+                        subprocess.run(cmd, shell=True, check=True)
+                        scope_msg = "entire network" if self.scope == 'network' else "this device"
+                        print(f"   ✅ Applied on interface: {self.interface} ({scope_msg})")
+                    
                     if level['latency_ms'] > 0:
                         print(f"   ⏱️  Latency: {level['latency_ms']}ms ± {level['jitter_ms']}ms")
                     if level['packet_loss_pct'] > 0:
@@ -353,8 +432,16 @@ class NetworkRuckus:
         status += f"Current Chamber: {self.current_chamber['name']}\n"
         status += f"Active: {'🟢 YES' if self.is_active else '🔴 NO'}\n"
         status += f"Interface: {self.interface or 'Auto-detect'}\n"
-        if self.target_ip:
-            status += f"Target IP: {self.target_ip} (affects all traffic currently)\n"
+        
+        scope_names = {
+            'local': '🖥️  Local Device Only',
+            'network': '🌐 Entire Network (Gateway Mode)',
+            'targeted': '🎯 Targeted IP'
+        }
+        status += f"Scope: {scope_names.get(self.scope, self.scope)}\n"
+        
+        if self.target_ip and self.scope == 'targeted':
+            status += f"Target IP: {self.target_ip}\n"
         status += f"Deadman Timeout: {self.deadman.timeout_minutes} minutes\n"
 
         if self.is_active:
@@ -386,13 +473,14 @@ def show_menu():
     print("   36 Chambers of Network Chaos")
     print("   Ubuntu Server Edition - Using tc (traffic control)")
     print("="*60)
+    print("\n📍 SCOPE:")
+    print("  o - Set scope: Local / Network / Targeted IP")
     print("\n🔱 Select Your Chamber:")
     for i, chamber in enumerate(ChaosChamber.all_chambers(), 1):
         print(f"  {i}. {chamber['name']}")
     print("\n⚡ Commands:")
     print("  s - Show current status")
     print("  c - Clear all ruckus (restore normal network)")
-    print("  t - Set target IP (optional, not yet implemented)")
     print("  i - Set network interface")
     print("  d - Show detailed tc configuration")
     print("  q - Quit and clean up")
@@ -429,8 +517,26 @@ def interactive_mode(ruckus: NetworkRuckus):
             elif choice == 'd':
                 ruckus.show_tc_status()
 
+            elif choice == 'o':
+                print("\n📍 Select scope:")
+                print("   [1] Local device only (default)")
+                print("   [2] Entire network (requires gateway mode)")
+                print("   [3] Targeted IP address")
+                scope_choice = input("Enter choice: ").strip()
+                
+                if scope_choice == '1':
+                    ruckus.set_scope('local')
+                elif scope_choice == '2':
+                    ruckus.set_scope('network')
+                elif scope_choice == '3':
+                    ip = input("Enter target IP address: ").strip()
+                    if ip:
+                        ruckus.set_target(ip)
+                    else:
+                        print("❌ Invalid IP")
+
             elif choice == 't':
-                ip = input("Enter target IP address (not yet implemented): ").strip()
+                ip = input("Enter target IP address: ").strip()
                 if ip:
                     ruckus.set_target(ip)
                 else:
