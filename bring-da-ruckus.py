@@ -160,21 +160,21 @@ class DeadmanSwitch:
             time.sleep(5)  # Check every 5 seconds
             elapsed = (datetime.now() - self.last_activity).total_seconds()
             elapsed_minutes = elapsed / 60
-            
+
             # Warning at 30 seconds before timeout
             if not self.warned and elapsed >= (self.timeout_minutes * 60 - 30):
                 self.warned = True
                 print(f"\n\n⚠️  WARNING: Deadman's switch will trigger in 30 seconds!")
                 print("Continue testing? (Y/N): ", end='', flush=True)
-                
+
                 # Start a thread to wait for input
                 import select
                 import sys
-                
+
                 # Non-blocking input check for 30 seconds
                 start_wait = datetime.now()
                 user_responded = False
-                
+
                 while (datetime.now() - start_wait).total_seconds() < 30:
                     if sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
                         response = sys.stdin.readline().strip().upper()
@@ -189,13 +189,13 @@ class DeadmanSwitch:
                             self.callback()
                             return
                     time.sleep(0.5)
-                
+
                 # If no response after 30 seconds, trigger callback
                 if not user_responded:
                     print("\n\n⏰ No response - Deadman's switch triggered!")
                     self.callback()
                     break
-            
+
             # Final timeout check
             elif elapsed_minutes >= self.timeout_minutes:
                 if not self.warned:  # Direct timeout without warning
@@ -260,9 +260,9 @@ class NetworkRuckus:
         if scope not in ['local', 'network', 'targeted']:
             print("❌ Invalid scope. Use 'local', 'network', or 'targeted'")
             return False
-        
+
         self.scope = scope
-        
+
         if scope == 'network':
             # Check if IP forwarding is enabled
             try:
@@ -294,7 +294,7 @@ class NetworkRuckus:
                 print(f"❌ Failed to configure IP forwarding: {e}")
                 self.scope = 'local'
                 return False
-        
+
         scope_names = {
             'local': '🖥️  Local Device Only',
             'network': '🌐 Entire Network (Gateway Mode)',
@@ -332,9 +332,9 @@ class NetworkRuckus:
         elif level == ChaosChamber.PEACE:
             # Clear iptables rules too
             if self.target_ip:
-                subprocess.run(f"iptables -D INPUT -s {self.target_ip} -j DROP", 
+                subprocess.run(f"iptables -D INPUT -s {self.target_ip} -j DROP",
                              shell=True, stderr=subprocess.DEVNULL)
-                subprocess.run(f"iptables -D OUTPUT -d {self.target_ip} -j DROP", 
+                subprocess.run(f"iptables -D OUTPUT -d {self.target_ip} -j DROP",
                              shell=True, stderr=subprocess.DEVNULL)
             print(f"   ✅ All disruptions cleared on {self.interface}")
             print(f"   ☯️  Network has returned to peace")
@@ -357,7 +357,7 @@ class NetworkRuckus:
                     if self.scope == 'targeted' and self.target_ip:
                         # Use tc with filters for targeted disruption
                         # Create root qdisc with prio
-                        subprocess.run(f"tc qdisc add dev {self.interface} root handle 1: prio", 
+                        subprocess.run(f"tc qdisc add dev {self.interface} root handle 1: prio",
                                      shell=True, check=True)
                         # Add netem to band 1
                         cmd = f"tc qdisc add dev {self.interface} parent 1:1 handle 10: netem {' '.join(params)}"
@@ -374,7 +374,7 @@ class NetworkRuckus:
                         subprocess.run(cmd, shell=True, check=True)
                         scope_msg = "entire network" if self.scope == 'network' else "this device"
                         print(f"   ✅ Applied on interface: {self.interface} ({scope_msg})")
-                    
+
                     if level['latency_ms'] > 0:
                         print(f"   ⏱️  Latency: {level['latency_ms']}ms ± {level['jitter_ms']}ms")
                     if level['packet_loss_pct'] > 0:
@@ -432,14 +432,14 @@ class NetworkRuckus:
         status += f"Current Chamber: {self.current_chamber['name']}\n"
         status += f"Active: {'🟢 YES' if self.is_active else '🔴 NO'}\n"
         status += f"Interface: {self.interface or 'Auto-detect'}\n"
-        
+
         scope_names = {
             'local': '🖥️  Local Device Only',
             'network': '🌐 Entire Network (Gateway Mode)',
             'targeted': '🎯 Targeted IP'
         }
         status += f"Scope: {scope_names.get(self.scope, self.scope)}\n"
-        
+
         if self.target_ip and self.scope == 'targeted':
             status += f"Target IP: {self.target_ip}\n"
         status += f"Deadman Timeout: {self.deadman.timeout_minutes} minutes\n"
@@ -468,11 +468,37 @@ class NetworkRuckus:
 
 def show_menu():
     """Display the main menu"""
-    print("\n" + "="*60)
-    print("🥷 BRING DA RUCKUS - Wu-Tang Sword Style")
-    print("   36 Chambers of Network Chaos")
-    print("   Ubuntu Server Edition - Using tc (traffic control)")
-    print("="*60)
+    print("\n")
+    print("                                      .*@@@%.       ")
+    print("     .##*=:.                      :+%@@@@@@@#.      ")
+    print("    .#@@@@@@@@#=:...          .-%@@@@@@@@@@@@%.     ")
+    print("    *@@@@@@@@@@@@@@@%:     :%@@@@@@@@@@@@@@@@@*     ")
+    print("   -@@@@@@@@@@@@@@@%.       .+@@@@@@@@@@@@@@@@@=    ")
+    print("  .*@@@@@@@@@@@@@@@=   ..-*=. -@@@@@@@@@@@@@@@@@:   ")
+    print("  .%@@@@@@@@@@@@@@@= :#@@@@@# .@@@@@@@@@@@@@@@@@*.  ")
+    print("  :@@@@@@@@@@@@@@@@@: .%@@@@@.*@@@@@@@@@@@@@@@@@%.  ")
+    print("  -@@@@@@@@@@@@@@@@@@*:@@@@@@@@@@@@@@@@@@@@@@@@@@:  ")
+    print("  -@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@-  ")
+    print("  .@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@-  ")
+    print("  .%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@:  ")
+    print("  .+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%.  ")
+    print("   .%@@@@@@@@@@@@@@@@@@@@@+=+%@@@@@@@@@@@@@@@@@@=.  ")
+    print("    .%@@@@@@@@@@@@@@@@@@%.    =@@@@@@@@@@@@@@@@#.   ")
+    print("     .%@@@@@@@@@@@@@@@@@#     .@@@@@@@@@@@@@@@*     ")
+    print("       -%@@@@@@@@@@@@@@@@:    .@@@@@@@@@@@@@@+.     ")
+    print("         :#@@@@@@@@@@@@@@#.   :@@@@@@@@@@@@%:       ")
+    print("            .*@@@@@@@@@@@@+   =@@@@@@@@@@%:         ")
+    print("               ..:-+#@@@@@@+  #@@@@@@@@+.           ")
+    print("                             -@@@@@%+:              ")
+    print("                            .@@@*.                  ")
+    print("")
+    print("    \"Shaolin shadowboxing and the Wu-Tang sword style")
+    print("     If what you say is true, the Shaolin and the Wu-Tang could be dangerous")
+    print("     Do you think your Wu-Tang sword can defeat me?\"")
+    print("")
+    print("=" * 80)
+    print("                    🥷 BRING DA RUCKUS - 36 Chambers of Chaos 🥷")
+    print("=" * 80)
     print("\n📍 SCOPE:")
     print("  o - Set scope: Local / Network / Targeted IP")
     print("\n🔱 Select Your Chamber:")
@@ -484,7 +510,7 @@ def show_menu():
     print("  i - Set network interface")
     print("  d - Show detailed tc configuration")
     print("  q - Quit and clean up")
-    print("="*60)
+    print("=" * 80)
 
 
 def interactive_mode(ruckus: NetworkRuckus):
@@ -523,7 +549,7 @@ def interactive_mode(ruckus: NetworkRuckus):
                 print("   [2] Entire network (requires gateway mode)")
                 print("   [3] Targeted IP address")
                 scope_choice = input("Enter choice: ").strip()
-                
+
                 if scope_choice == '1':
                     ruckus.set_scope('local')
                 elif scope_choice == '2':
