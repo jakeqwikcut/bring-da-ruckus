@@ -296,7 +296,9 @@ class NetworkRuckus:
         print(f"   ☯️  Peace has been restored to the chambers")
 
         self.is_active = False
-        self.current_chamber = ChaosChamber.PEACE    def _emergency_stop(self):
+        self.current_chamber = ChaosChamber.PEACE
+
+    def _emergency_stop(self):
         """Emergency stop triggered by deadman's switch"""
         print("\n🚨 EMERGENCY STOP - Clearing all ruckus!")
         self.clear_ruckus()
