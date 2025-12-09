@@ -378,12 +378,6 @@ class NetworkRuckus:
                         )
                         if res.returncode != 0:
                             print(f"   ❌ Failed to whitelist management OUTPUT for {mgmt_ip}: {res.stderr.decode().strip()}", file=sys.stderr)
-                            shell=True, stderr=subprocess.DEVNULL
-                        )
-                        subprocess.run(
-                            f"iptables -I OUTPUT -d {mgmt_ip} -j ACCEPT",
-                            shell=True, stderr=subprocess.DEVNULL
-                        )
 
                     print(f"   🛡️  SSH (port 22) protected from chaos")
                     if self.ssh_client_ip:
