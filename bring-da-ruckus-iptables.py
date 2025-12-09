@@ -267,10 +267,10 @@ class NetworkRuckus:
                 shell=True, stderr=subprocess.DEVNULL
             )
 
-            
+
             print(f"   ✅ Applied on interface: {self.interface}")
             print(f"   📉 Packet Loss: {level['packet_loss_pct']}% (ALL TRAFFIC including local network)")
-        
+
         self.current_chamber = level
         self.is_active = (level != ChaosChamber.PEACE)
         self.deadman.reset()

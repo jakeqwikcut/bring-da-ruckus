@@ -6,10 +6,9 @@ Apply chaos ONLY to traffic from specific camera IP (simulates bad LAN/WiFi repe
 
 import subprocess
 import sys
+import os
 
-CAMERA_IP = "192.168.1.78"  # Your Axis camera
-
-def apply_camera_chaos(loss_percent):
+def apply_camera_chaos(camera_ip, loss_percent):
     """Apply packet loss only to traffic from camera"""
     chain = "CAMERA_CHAOS"
     
@@ -20,68 +19,118 @@ def apply_camera_chaos(loss_percent):
     # Drop packets from camera with probability
     probability = loss_percent / 100.0
     subprocess.run(
-        f"iptables -A {chain} -s {CAMERA_IP} -m statistic --mode random --probability {probability} -j DROP",
+        f"iptables -A {chain} -s {camera_ip} -m statistic --mode random --probability {probability} -j DROP",
         shell=True, check=True
     )
     
     # Apply to INPUT (packets coming from camera to Jetson)
     subprocess.run(f"iptables -I INPUT -j {chain}", shell=True, check=True)
     
-    print(f"✅ Applying {loss_percent}% packet loss to traffic FROM {CAMERA_IP}")
-    print(f"   Camera → Jetson link now has chaos")
-    print(f"   Jetson → Server link is NORMAL")
+    print(f"\n✅ Applying {loss_percent}% packet loss to traffic FROM {camera_ip}")
+    print(f"   📹 Camera → Jetson link now has chaos")
+    print(f"   🌐 Jetson → Server link is NORMAL")
 
-def clear_camera_chaos():
+def clear_camera_chaos(camera_ip):
     """Clear all camera chaos rules"""
     chain = "CAMERA_CHAOS"
     subprocess.run(f"iptables -D INPUT -j {chain}", shell=True, stderr=subprocess.DEVNULL)
     subprocess.run(f"iptables -F {chain}", shell=True, stderr=subprocess.DEVNULL)
     subprocess.run(f"iptables -X {chain}", shell=True, stderr=subprocess.DEVNULL)
-    print(f"✅ Cleared all chaos for {CAMERA_IP}")
-
-def show_status():
+    print(f"\n✅ Cleared all chaos for {camera_ip}")def show_status():
     """Show current iptables rules"""
     print("\n📊 Current iptables rules for camera:")
     subprocess.run(f"iptables -L CAMERA_CHAOS -n -v 2>/dev/null || echo 'No chaos active'", shell=True)
 
+def show_menu():
+    """Display interactive menu"""
+    print("\n╔════════════════════════════════════════════════════════════════╗")
+    print("║  📹 Camera Chaos - Wu-Tang Style                               ║")
+    print("╠════════════════════════════════════════════════════════════════╣")
+    print("║                                                                ║")
+    print("║  [1] The Swarm (1% loss)                                       ║")
+    print("║  [2] The Mystery (9% loss)                                     ║")
+    print("║  [3] The 5 Deadly Venoms (18% loss)                            ║")
+    print("║  [4] The 36 Swords (36% loss)                                  ║")
+    print("║  [5] Shaolin Shadow (100% loss)                                ║")
+    print("║                                                                ║")
+    print("║  [s] Show Status      [c] Clear All      [q] Quit             ║")
+    print("╚════════════════════════════════════════════════════════════════╝")
+
+def interactive_mode(camera_ip):
+    """Run interactive mode"""
+    print("\n🎬 Interactive mode - Camera Chaos")
+    print(f"🎯 Target: {camera_ip}")
+    print(f"📹 Affecting: Camera → Jetson only")
+    print(f"🌐 Normal: Jetson → Server (your stream upload is fine)")
+    
+    chambers = {
+        '1': ('The Swarm', 1),
+        '2': ('The Mystery', 9),
+        '3': ('The 5 Deadly Venoms', 18),
+        '4': ('The 36 Swords', 36),
+        '5': ('Shaolin Shadow', 100)
+    }
+    
+    try:
+        while True:
+            show_menu()
+            choice = input("\n👉 Enter your choice: ").strip().lower()
+            
+            if choice == 'q':
+                print("\n👋 Exiting and cleaning up...")
+                clear_camera_chaos(camera_ip)
+                break
+            
+            elif choice == 's':
+                show_status()
+            
+            elif choice == 'c':
+                clear_camera_chaos(camera_ip)
+            
+            elif choice in chambers:
+                name, loss = chambers[choice]
+                print(f"\n🥋 Applying: {name}")
+                clear_camera_chaos(camera_ip)  # Clear old first
+                apply_camera_chaos(camera_ip, loss)
+            
+            else:
+                print("❌ Invalid choice")
+    
+    except KeyboardInterrupt:
+        print("\n\n⚠️  Interrupted! Cleaning up...")
+        clear_camera_chaos(camera_ip)
+
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print(f"""
-╔════════════════════════════════════════════════════════════════╗
-║  Camera-Specific Chaos Tool                                    ║
-║  Target: {CAMERA_IP}                                    ║
-╠════════════════════════════════════════════════════════════════╣
-║                                                                ║
-║  Usage:                                                        ║
-║    sudo python3 camera-chaos.py <percent>                      ║
-║    sudo python3 camera-chaos.py clear                          ║
-║    sudo python3 camera-chaos.py status                         ║
-║                                                                ║
-║  Examples:                                                     ║
-║    sudo python3 camera-chaos.py 1      # 1% loss              ║
-║    sudo python3 camera-chaos.py 9      # 9% loss              ║
-║    sudo python3 camera-chaos.py 18     # 18% loss             ║
-║    sudo python3 camera-chaos.py clear  # Remove chaos         ║
-║                                                                ║
-╚════════════════════════════════════════════════════════════════╝
-""")
+    # Check for root
+    if os.geteuid() != 0:
+        print("❌ This tool requires root privileges")
+        print("   Please run with sudo:")
+        print(f"   sudo python3 {sys.argv[0]}")
         sys.exit(1)
     
-    cmd = sys.argv[1].lower()
+    # Show banner
+    print("\n████████████████████████████████████████████████████████████████")
+    print("██                                                            ██")
+    print("██                    CAMERA CHAOS TOOL                       ██")
+    print("██                   Wu-Tang Sword Style                      ██")
+    print("██                                                            ██")
+    print("████████████████████████████████████████████████████████████████")
+    print()
     
-    if cmd == "clear":
-        clear_camera_chaos()
-    elif cmd == "status":
-        show_status()
+    # Get camera IP
+    if len(sys.argv) > 1:
+        camera_ip = sys.argv[1]
     else:
-        try:
-            loss = int(cmd)
-            if loss < 0 or loss > 100:
-                print("❌ Loss percent must be 0-100")
-                sys.exit(1)
-            clear_camera_chaos()  # Clear old rules first
-            if loss > 0:
-                apply_camera_chaos(loss)
-        except ValueError:
-            print("❌ Invalid command. Use a number (0-100), 'clear', or 'status'")
+        camera_ip = input("📹 Enter camera IP address: ").strip()
+        if not camera_ip:
+            print("❌ No IP address provided")
             sys.exit(1)
+    
+    # Wu-Tang quote
+    print()
+    print("🥋 \"En garde, I'll let you try my Wu-Tang style\"")
+    print()
+    input("Press ENTER to continue...")
+    
+    # Start interactive mode
+    interactive_mode(camera_ip)
