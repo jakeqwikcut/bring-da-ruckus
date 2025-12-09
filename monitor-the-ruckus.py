@@ -22,17 +22,17 @@ class NetworkMonitor:
         self.interface = interface
         self.targets = targets or {}
         self.running = False
-        
+
         # Historical data (last 60 samples = ~1 minute at 1 sec interval)
         self.history_size = 60
         self.bandwidth_history = deque(maxlen=self.history_size)
         self.latency_history = {name: deque(maxlen=self.history_size) for name in self.targets}
         self.packet_loss_history = {name: deque(maxlen=self.history_size) for name in self.targets}
-        
+
         # Previous stats for bandwidth calculation
         self.prev_stats = None
         self.prev_time = None
-        
+
         # Alert thresholds
         self.alert_thresholds = {
             'latency_ms': 100,
@@ -115,13 +115,13 @@ class NetworkMonitor:
                 ['ping', '-c', str(count), '-i', '0.2', '-W', '1', ip],
                 capture_output=True, text=True, timeout=10
             )
-            
+
             output = result.stdout
-            
+
             # Parse packet loss
             loss_match = re.search(r'(\d+)% packet loss', output)
             packet_loss = int(loss_match.group(1)) if loss_match else 100
-            
+
             # Parse latency stats
             stats_match = re.search(r'rtt min/avg/max/mdev = ([\d.]+)/([\d.]+)/([\d.]+)/([\d.]+)', output)
             if stats_match:
@@ -129,7 +129,7 @@ class NetworkMonitor:
                 avg_ms = float(stats_match.group(2))
                 max_ms = float(stats_match.group(3))
                 mdev_ms = float(stats_match.group(4))  # Standard deviation (jitter)
-                
+
                 return {
                     'success': True,
                     'min_ms': min_ms,
@@ -153,18 +153,18 @@ class NetworkMonitor:
         """Calculate connection quality score (0-100)"""
         # Start with perfect score
         score = 100
-        
+
         # Deduct for latency (exponential penalty)
         if latency_ms > 20:
             score -= min(30, (latency_ms - 20) * 0.5)
-        
+
         # Deduct for packet loss (severe penalty)
         score -= packet_loss_pct * 5
-        
+
         # Deduct for jitter
         if jitter_ms > 10:
             score -= min(20, (jitter_ms - 10) * 0.5)
-        
+
         return max(0, min(100, score))
 
     def get_quality_status(self, score):
@@ -188,11 +188,11 @@ class NetworkMonitor:
                 capture_output=True, text=True
             )
             output = result.stdout
-            
+
             # Parse TCP stats
             segments_sent = 0
             segments_retransmitted = 0
-            
+
             for line in output.split('\n'):
                 if 'segments sent out' in line.lower():
                     match = re.search(r'(\d+)', line)
@@ -202,7 +202,7 @@ class NetworkMonitor:
                     match = re.search(r'(\d+)', line)
                     if match:
                         segments_retransmitted = int(match.group(1))
-            
+
             if segments_sent > 0:
                 retransmit_rate = (segments_retransmitted / segments_sent) * 100
                 return {
@@ -212,7 +212,7 @@ class NetworkMonitor:
                 }
         except Exception:
             pass
-        
+
         return None
 
     def display_dashboard(self):
@@ -220,14 +220,14 @@ class NetworkMonitor:
         # Move cursor to home position (top-left) without clearing screen
         print("\033[H", end='')
         sys.stdout.flush()
-        
+
         print("=" * 80)
         print("                🥷 MONITOR THE RUCKUS - Network Health 🥷")
         print("=" * 80)
         print(f"📡 Interface: {self.interface}")
         print(f"🕐 Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         print("=" * 80)
-        
+
         # Get current stats
         stats = self.get_interface_stats()
         if stats:
@@ -235,75 +235,75 @@ class NetworkMonitor:
             print("\n🖥️  LOCAL DEVICE HEALTH:")
             print(f"   RX: {stats['rx_packets']:,} packets ({stats['rx_bytes']:,} bytes)")
             print(f"   TX: {stats['tx_packets']:,} packets ({stats['tx_bytes']:,} bytes)")
-            
+
             rx_status = "🟢" if stats['rx_errors'] == 0 else "🔴"
             tx_status = "🟢" if stats['tx_errors'] == 0 else "🔴"
             print(f"   {rx_status} Errors: RX={stats['rx_errors']}, TX={stats['tx_errors']}")
-            
+
             drop_status = "🟢" if (stats['rx_dropped'] == 0 and stats['tx_dropped'] == 0) else "🔴"
             print(f"   {drop_status} Dropped: RX={stats['rx_dropped']}, TX={stats['tx_dropped']}")
-            
+
             # Bandwidth
             bandwidth = self.calculate_bandwidth(stats)
             self.bandwidth_history.append(bandwidth['total_mbps'])
-            
+
             print(f"\n📊 BANDWIDTH USAGE:")
             print(f"   ⬇️  Download: {bandwidth['download_mbps']:.2f} Mbps")
             print(f"   ⬆️  Upload: {bandwidth['upload_mbps']:.2f} Mbps")
             print(f"   🔄 Total: {bandwidth['total_mbps']:.2f} Mbps")
-            
+
             if len(self.bandwidth_history) > 5:
                 avg_bw = statistics.mean(self.bandwidth_history)
                 max_bw = max(self.bandwidth_history)
                 print(f"   📈 Avg (1min): {avg_bw:.2f} Mbps  |  Peak: {max_bw:.2f} Mbps")
-        
+
         # TCP retransmits
         tcp_stats = self.check_tcp_retransmits()
         if tcp_stats:
             print(f"\n🔄 TCP RETRANSMITS:")
             print(f"   Sent: {tcp_stats['sent']:,}  |  Retransmitted: {tcp_stats['retransmitted']:,}")
-            
+
             status = "🟢" if tcp_stats['rate_pct'] < 1 else "🟡" if tcp_stats['rate_pct'] < 5 else "🔴"
             print(f"   {status} Retransmit Rate: {tcp_stats['rate_pct']:.3f}%")
-        
+
         # Target monitoring
         if self.targets:
             print(f"\n" + "=" * 80)
             print("🎯 TARGET MONITORING:")
             print("=" * 80)
-            
+
             for name, ip in self.targets.items():
                 print(f"\n📍 {name} ({ip}):")
-                
+
                 # Ping target
                 ping_result = self.ping_target(ip, count=5)
-                
+
                 if ping_result['success']:
                     latency = ping_result['avg_ms']
                     jitter = ping_result['jitter_ms']
                     packet_loss = ping_result['packet_loss_pct']
-                    
+
                     # Store history
                     self.latency_history[name].append(latency)
                     self.packet_loss_history[name].append(packet_loss)
-                    
+
                     # Calculate quality score
                     quality_score = self.calculate_quality_score(latency, packet_loss, jitter)
                     quality_status = self.get_quality_status(quality_score)
-                    
+
                     print(f"   ⏱️  Latency: {latency:.1f}ms (min: {ping_result['min_ms']:.1f}, max: {ping_result['max_ms']:.1f})")
                     print(f"   📶 Jitter: {jitter:.1f}ms")
                     print(f"   📉 Packet Loss: {packet_loss}%")
                     print(f"   ⭐ Quality Score: {quality_score:.0f}/100 - {quality_status}")
-                    
+
                     # Historical stats
                     if len(self.latency_history[name]) > 5:
                         avg_latency = statistics.mean(self.latency_history[name])
                         max_latency = max(self.latency_history[name])
                         avg_loss = statistics.mean(self.packet_loss_history[name])
-                        
+
                         print(f"   📊 1-min Avg: Latency={avg_latency:.1f}ms, Loss={avg_loss:.1f}%, Max Latency={max_latency:.1f}ms")
-                    
+
                     # Alerts
                     alerts = []
                     if latency > self.alert_thresholds['latency_ms']:
@@ -314,14 +314,14 @@ class NetworkMonitor:
                         alerts.append(f"HIGH JITTER ({jitter:.0f}ms)")
                     if quality_score < self.alert_thresholds['quality_score']:
                         alerts.append(f"POOR QUALITY ({quality_score:.0f}/100)")
-                    
+
                     if alerts:
                         print(f"   ⚠️  ALERTS: {', '.join(alerts)}")
                 else:
                     print(f"   ❌ UNREACHABLE - 100% packet loss")
                     self.latency_history[name].append(0)
                     self.packet_loss_history[name].append(100)
-        
+
         print("\n" + "=" * 80)
         print("Press Ctrl+C to stop monitoring")
         print("=" * 80)
@@ -329,22 +329,22 @@ class NetworkMonitor:
     def run(self, interval: float = 2.0):
         """Run monitoring loop"""
         self.running = True
-        
+
         if not self.interface:
             self.interface = self.detect_interface()
-        
+
         print(f"\n🎬 Starting network monitoring...")
         print(f"📡 Interface: {self.interface}")
         print(f"🎯 Targets: {', '.join([f'{name} ({ip})' for name, ip in self.targets.items()])}")
         print(f"⏱️  Update interval: {interval}s")
         print(f"\nGathering initial data...\n")
-        
+
         time.sleep(2)
-        
+
         # Enter alternate screen buffer and hide cursor (like htop)
         print("\033[?1049h\033[?25l", end='')
         sys.stdout.flush()
-        
+
         try:
             while self.running:
                 self.display_dashboard()
@@ -390,27 +390,27 @@ Features:
 
 ════════════════════════════════════════════════════════════════════════════════
 """)
-    
+
     # Get monitoring targets
     targets = {}
-    
+
     print("🎯 Configure monitoring targets:")
     print("   Enter IP addresses to monitor (press ENTER to skip)")
     print()
-    
+
     # Default suggestions
     camera = input("📹 Camera IP (e.g., 192.168.1.78): ").strip()
     if camera:
         targets['Camera'] = camera
-    
+
     gateway = input("🌐 Gateway/Router IP (e.g., 192.168.1.1): ").strip()
     if gateway:
         targets['Gateway'] = gateway
-    
+
     server = input("☁️  Server IP (e.g., 8.8.8.8): ").strip()
     if server:
         targets['Server'] = server
-    
+
     # Custom targets
     while True:
         custom = input("➕ Add another target? (name:ip or ENTER to finish): ").strip()
@@ -419,31 +419,31 @@ Features:
         if ':' in custom:
             name, ip = custom.split(':', 1)
             targets[name.strip()] = ip.strip()
-    
+
     if not targets:
         print("\n⚠️  No targets specified. Monitoring local interface only.")
-    
+
     # Create monitor
     monitor = NetworkMonitor(targets=targets)
-    
+
     # Set custom thresholds
     print("\n⚙️  Alert thresholds (press ENTER for defaults):")
-    
+
     try:
         latency = input(f"   Latency threshold (default: 100ms): ").strip()
         if latency:
             monitor.alert_thresholds['latency_ms'] = float(latency)
-        
+
         loss = input(f"   Packet loss threshold (default: 5%): ").strip()
         if loss:
             monitor.alert_thresholds['packet_loss_pct'] = float(loss)
-        
+
         jitter = input(f"   Jitter threshold (default: 50ms): ").strip()
         if jitter:
             monitor.alert_thresholds['jitter_ms'] = float(jitter)
     except ValueError:
         print("   Using default thresholds")
-    
+
     # Start monitoring
     monitor.run(interval=2.0)
 

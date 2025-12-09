@@ -33,7 +33,7 @@ All notable changes to this network chaos engineering toolkit.
 ```
 Base score: 100
 - Latency penalty: (latency_ms / 10)
-- Loss penalty: (packet_loss_pct * 5)  
+- Loss penalty: (packet_loss_pct * 5)
 - Jitter penalty: (jitter_ms / 5)
 Result: Clamped to 0-100 range
 ```
@@ -193,9 +193,9 @@ if level == 'shadow':
 ---
 
 ## Repository
-**GitHub**: https://github.com/jakeqwikcut/bring-da-ruckus  
-**Author**: Jake Mammen  
-**Created**: December 2025  
+**GitHub**: https://github.com/jakeqwikcut/bring-da-ruckus
+**Author**: Jake Mammen
+**Created**: December 2025
 **License**: Internal QwikCut tool - All rights reserved
 
 ---

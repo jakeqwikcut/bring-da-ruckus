@@ -118,7 +118,7 @@
 
 **Quality Scoring:**
 - 90-100: 🟢 Excellent
-- 75-89: 🟢 Good  
+- 75-89: 🟢 Good
 - 50-74: 🟡 Fair
 - 25-49: 🔴 Poor
 - 0-24: 🔴 Critical
