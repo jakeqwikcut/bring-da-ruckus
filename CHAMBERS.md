@@ -193,7 +193,7 @@ sudo python3 bring-da-ruckus.py --level shaolin
 
 ```
 ============================================================
-🥷 BRING DA MOTHERFUCKING RUCKUS
+🥷 BRING DA RUCKUS
    36 Chambers of Network Chaos
    Ubuntu Server Edition - Using tc (traffic control)
 ============================================================
@@ -228,6 +228,6 @@ sudo python3 bring-da-ruckus.py --level shaolin
 
 ---
 
-**🥷 Wu-Tang is for the children. Test responsibly. Bring da motherfucking ruckus. 🥷**
+**🥷 Wu-Tang is for the children. Test responsibly. Bring da ruckus. 🥷**
 
 *M-E-T-H-O-D MAN*
