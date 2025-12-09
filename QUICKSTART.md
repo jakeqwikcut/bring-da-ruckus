@@ -1,11 +1,25 @@
 # Quick Start Guide - Bring Da Ruckus
 ## 36 Chambers of Chaos - Wu-Tang Sword Style Edition
 
+**Network Chaos Engineering Toolkit**  
 **Created by Jake Mammen - 2025**
 
 🥷 **Wu-Tang is for the children. Test responsibly.** 🥷
 
-## 5-Minute Setup on Ubuntu Server
+---
+
+## Which Tool Should I Use?
+
+Before starting, choose the right tool for your setup:
+
+- **Ubuntu Server with netem**: Use `bring-da-ruckus.py` (full features: latency, jitter, packet loss, bandwidth)
+- **Jetson Nano or no netem**: Use `bring-da-ruckus-iptables.py` (packet loss only)
+- **Target specific camera**: Use `camera-chaos.py` (camera-specific targeting)
+- **Monitor during testing**: Always use `monitor-the-ruckus.py` (comprehensive metrics + htop-style display)
+
+---
+
+## 5-Minute Setup
 
 1. **Clone the repository:**
    ```bash
@@ -16,18 +30,28 @@
 2. **Make scripts executable:**
    ```bash
    chmod +x bring-da-ruckus.py
+   chmod +x bring-da-ruckus-iptables.py
+   chmod +x camera-chaos.py
    chmod +x monitor-the-ruckus.py
    ```
 
-3. **Verify tc is installed:**
+3. **Verify tc is installed (for full version):**
    ```bash
    tc -Version
    # If not found: sudo apt-get install iproute2
+   # For Jetson Nano without netem: skip this, use iptables version
    ```
 
 4. **Run the chaos tool:**
    ```bash
+   # Full version (Ubuntu with netem)
    sudo python3 bring-da-ruckus.py
+   
+   # OR iptables version (Jetson/no netem)
+   sudo python3 bring-da-ruckus-iptables.py
+   
+   # OR camera-specific
+   sudo python3 camera-chaos.py
    ```
 
    You'll see the Wu-Tang W logo and the quote:
@@ -145,15 +169,45 @@
 **Monitoring Tool (monitor-the-ruckus.py):**
 
 ```bash
-# Basic monitoring
-python3 monitor-the-ruckus.py --targets 192.168.1.100
+# Basic monitoring with 2-second updates (htop-style locked display)
+python3 monitor-the-ruckus.py --targets 192.168.1.100 --interval 2
 
-# Multiple targets
+# Monitor multiple targets
 python3 monitor-the-ruckus.py --targets 192.168.1.100 192.168.1.1 8.8.8.8
 
-# Custom refresh interval
-python3 monitor-the-ruckus.py --targets 192.168.1.100 --interval 10
+# Configure alert thresholds (interactive)
+python3 monitor-the-ruckus.py --targets 192.168.1.100
+# Prompts for latency, packet loss, and jitter thresholds
 ```
+
+**Features:**
+- htop-style locked display (no scrolling!)
+- Quality scoring (0-100) with status indicators
+- Jitter measurement from ping statistics
+- 1-minute rolling averages for all metrics
+- Configurable alert thresholds
+- Multi-target support with per-target quality
+
+---
+
+## Tool-Specific Commands
+
+**bring-da-ruckus.py (Full Version):**
+- Requires: tc/netem kernel module
+- Features: Latency, jitter, packet loss, bandwidth throttling
+- Commands: `o` scope, `1-5` chambers, `0` peace, `s` status, `c` clear, `q` quit
+
+**bring-da-ruckus-iptables.py (Jetson Compatible):**
+- Requires: iptables only
+- Features: Packet loss only (1%, 9%, 18%, 36%, 100%)
+- Commands: Same as full version
+- Use when: Kernel lacks netem module
+
+**camera-chaos.py (Camera Targeting):**
+- Requires: iptables
+- Features: Target specific camera IP with 5 chambers
+- Interactive: Enter camera IP at startup
+- Use when: Testing single camera in isolation
 
 ## Your First Day Testing Plan
 
@@ -209,7 +263,13 @@ A: Works on any Linux with tc/iproute2 (Ubuntu, Debian, RHEL, CentOS, Fedora, et
 A: No. All changes are temporary and automatically reversed when you quit or after 5-minute timeout.
 
 **Q: What if I lose connection to the server?**
-A: Deadman's switch triggers after 5 minutes (with 30-second warning). You can also SSH from another machine and run `sudo python3 bring-da-ruckus.py --restore`
+A: Deadman's switch triggers after 5 minutes (with 30-second warning). Physical console access: run `sudo python3 bring-da-ruckus.py --restore` or use `emergency-recovery.sh`. See LOCKED-OUT.md for full recovery procedures.
+
+**Q: Which tool should I use on Jetson Nano?**
+A: Use `bring-da-ruckus-iptables.py` - Jetson kernels often lack netem module. This version uses iptables for packet loss simulation only.
+
+**Q: Can I simulate latency/jitter on Jetson?**
+A: No, requires netem kernel module. Use Ubuntu server with tc/netem for full testing capabilities.
 
 **Q: How do I know it's actually working?**
 A:
