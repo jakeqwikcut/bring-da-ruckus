@@ -86,13 +86,13 @@ This blocked ALL packets on the interface, including:
 
 ### Systems Affected
 - Production Ubuntu server (identity-server-01)
-- QwikCam network testing infrastructure
+- Camera network testing infrastructure
 - SSH access from management workstation
 
 ### Services Impacted
 - Remote administration (SSH) - **OFFLINE**
 - Network monitoring - **OFFLINE**
-- QwikCam testing - **OFFLINE**
+- Camera testing - **OFFLINE**
 - Server itself - **RUNNING** but unreachable
 
 ### Data Impact
@@ -258,7 +258,7 @@ This blocked ALL packets on the interface, including:
 4. **HAVE physical access** or out-of-band management ready
 5. **READ SAFETY-GUIDE.md** before each session
 
-### For QwikCut Operations
+### For Production Operations
 
 1. **Require chaos testing approval** for production systems
 2. **Mandate pre-flight safety checks** before each test

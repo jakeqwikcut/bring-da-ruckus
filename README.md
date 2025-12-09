@@ -56,7 +56,7 @@ Chamber 6 (Shaolin Shadow - 100% packet loss) requires special precautions.
 ════════════════════════════════════════════════════════════════════════════════
 
 Bring Da Ruckus - Network Chaos Engineering Tool
-Inspired by Wu-Tang sword style for testing QwikCut camera systems
+Inspired by Wu-Tang sword style for network resilience testing
 Created by Jake Mammen - 2025
 
 Simulates network degradation scenarios using Linux tc (traffic control):
@@ -69,7 +69,7 @@ Simulates network degradation scenarios using Linux tc (traffic control):
 
 ## Overview
 
-Bring Da Ruckus is a network chaos engineering toolkit designed to test QwikCut camera systems under adverse network conditions. Deploy it on your Ubuntu server to simulate real-world network problems that can affect video streaming, recording quality, and cloud synchronization.
+Bring Da Ruckus is a network chaos engineering toolkit designed to test IP camera systems and network applications under adverse network conditions. Deploy it on your Ubuntu server to simulate real-world network problems that can affect video streaming, recording quality, and cloud synchronization.
 
 **Four powerful tools:**
 1. **bring-da-ruckus.py** - Full-featured chaos tool with tc/netem (latency, jitter, packet loss, bandwidth)
@@ -87,7 +87,7 @@ Use them together: monitor in one terminal while chaos tests run in another!
 - **Three Chaos Scopes**:
   - 🖥️ **Local Device**: Affects only the server running the tool
   - 🌐 **Entire Network**: Gateway mode - disrupts all traffic flowing through server
-  - 🎯 **Targeted IP**: Precision chaos for specific devices (perfect for QwikCam testing)
+  - 🎯 **Targeted IP**: Precision chaos for specific devices (perfect for camera testing)
 - **Interactive CLI**: Real-time control with Wu-Tang themed interface
 - **Smart Deadman's Switch**:
   - 5-minute timeout with 30-second warning
@@ -240,7 +240,7 @@ Press `o` to choose:
 
 ### Network Monitoring
 
-**Monitor your QwikCam during chaos tests:**
+**Monitor your camera during chaos tests:**
 
 ```bash
 # Monitor specific target with default settings
@@ -301,7 +301,7 @@ sudo python3 bring-da-ruckus.py --interface eth1
 
 1. **Start Monitoring**
    ```bash
-   python3 monitor-the-ruckus.py --targets <qwikcam-ip> <router-ip>
+   python3 monitor-the-ruckus.py --targets <camera-ip> <router-ip>
    ```
 
 2. **In Another Terminal, Start Chaos Tool**
@@ -312,11 +312,11 @@ sudo python3 bring-da-ruckus.py --interface eth1
 3. **Configure Scope**
    - Press `o`
    - Choose targeted IP mode
-   - Enter your QwikCam IP
+   - Enter your camera IP
 
 4. **Apply Chambers Progressively**
    - Start with Chamber 1 (The Swarm)
-   - Observe QwikCam behavior in monitoring terminal
+   - Observe camera behavior in monitoring terminal
    - Progress through chambers as needed
    - Test video quality, recording, cloud uploads
 
@@ -332,7 +332,7 @@ sudo python3 bring-da-ruckus.py --interface eth1
 # Specify network interface
 sudo python3 bring-da-ruckus.py --interface eth0
 
-# Target specific IP (QwikCam IP) - not yet fully implemented
+# Target specific IP (camera IP) - not yet fully implemented
 sudo python3 bring-da-ruckus.py --target 192.168.1.100
 
 # Combine options
@@ -401,17 +401,17 @@ The deadman's switch is a **critical safety feature** that automatically stops a
 - No response = automatic restore to peace
 - Prevents accidental long-term network disruption
 
-## Testing Scenarios for QwikCut
+## Testing Scenarios for IP Camera Systems
 
 See [test-scenarios.md](test-scenarios.md) for 8 comprehensive testing scenarios.
 
-### Quick Example: Targeted QwikCam Test
+### Quick Example: Targeted Camera Test
 
 ```bash
 # Terminal 1: Start monitoring
 python3 monitor-the-ruckus.py --targets 192.168.1.100 --interval 5
 
-# Terminal 2: Apply chaos to QwikCam
+# Terminal 2: Apply chaos to camera
 sudo python3 bring-da-ruckus.py
 # Press 'o' → Choose '3' (Targeted IP) → Enter 192.168.1.100
 # Press '1' for Chamber 1 (The Swarm)
@@ -498,7 +498,7 @@ Real-time Python dashboard using:
 ## Best Practices
 
 1. **Start Small**: Begin with Chamber 1 (The Swarm)
-2. **Use Targeted Mode**: Focus chaos on specific QwikCam IP for precise testing
+2. **Use Targeted Mode**: Focus chaos on specific camera IP for precise testing
 3. **Monitor Everything**: Run monitor-the-ruckus.py in separate terminal
 4. **Document Results**: Note which chambers cause which symptoms
 5. **Test in Phases**: Test one aspect at a time (streaming, uploads, commands)
@@ -556,7 +556,7 @@ Target specific camera IP addresses with precision chaos testing.
 
 **Requirements:** iptables
 
-**Best For:** Testing specific QwikCam without affecting other devices
+**Best For:** Testing specific camera without affecting other devices
 
 **Usage:**
 ```bash
@@ -590,7 +590,7 @@ Real-time network monitoring companion tool with comprehensive metrics.
 python3 monitor-the-ruckus.py --targets 192.168.1.100 --interval 2
 ```
 
-## QwikCut-Specific Testing
+## IP Camera Testing
 
 ### Testing Checklist
 
@@ -639,7 +639,7 @@ The **downlink** (cloud → camera) is less critical as:
 - **[CHAMBERS.md](CHAMBERS.md)** - Complete guide to the 36 Chambers of Chaos
 - **[QUICKSTART.md](QUICKSTART.md)** - Get running in 5 minutes
 - **[UBUNTU-DEPLOYMENT.md](UBUNTU-DEPLOYMENT.md)** - Complete deployment guide for Ubuntu Server
-- **[test-scenarios.md](test-scenarios.md)** - 8 comprehensive test scenarios for QwikCut
+- **[test-scenarios.md](test-scenarios.md)** - 8 comprehensive test scenarios for IP cameras
 - **[examples.sh](examples.sh)** - Command examples and configurations
 
 ## Wu-Tang Inspiration
@@ -652,15 +652,13 @@ This toolkit is inspired by Wu-Tang Clan's legendary album "Enter the Wu-Tang (3
 
 ## Contributing
 
-This tool is designed for QwikCut internal use. Suggestions and improvements welcome!
+Suggestions and improvements welcome! Feel free to submit issues or pull requests.
 
 ## Author
 
 Created by Jake Mammen - 2025
 
 Wu-Tang is for the children. Test responsibly. 🥷
-
-Internal QwikCut tool - All rights reserved.
 
 ---
 

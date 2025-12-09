@@ -36,7 +36,7 @@
 5. **Set your scope (press `o`):**
    - Choose `1` for Local (default - affects only this server)
    - Choose `2` for Network (gateway mode - affects all devices)
-   - Choose `3` for Targeted IP (precision chaos for your QwikCam)
+   - Choose `3` for Targeted IP (precision chaos for your camera)
 
 6. **Select a chamber:**
    - Press `1` for Chamber 1: The Swarm (Light disruption)
@@ -46,10 +46,10 @@
    - Press `5` for Shaolin Shadow (Total darkness)
    - Press `0` to restore Peace
 
-## First Test Scenario - Targeted QwikCam Test
+## First Test Scenario - Targeted Camera Test
 
 ### What You'll Need:
-- QwikCam IP address (e.g., 192.168.1.100)
+- Camera IP address (e.g., 192.168.1.100)
 - Two terminal windows/SSH sessions
 - Way to view the RTSP stream
 
@@ -59,7 +59,7 @@
    ```bash
    python3 monitor-the-ruckus.py --targets 192.168.1.100 192.168.1.1 --interval 2
    ```
-   You'll see real-time stats in an htop-style locked display for your QwikCam and router.
+   You'll see real-time stats in an htop-style locked display for your camera and router.
    The screen updates in place without scrolling!
 
 2. **Terminal 2 - Apply Chaos:**
@@ -70,12 +70,12 @@
 3. **Configure Targeted Mode:**
    - Press `o` (set scope)
    - Choose `3` (Targeted IP)
-   - Enter `192.168.1.100` (your QwikCam IP)
+   - Enter `192.168.1.100` (your camera IP)
 
 4. **Progress Through Chambers:**
    - Press `1` - Chamber 1 (The Swarm - 50ms latency, 1% loss)
    - Watch monitoring terminal for 2-3 minutes
-   - Observe QwikCam behavior
+   - Observe camera behavior
    - Press `2` - Chamber 9 (The Mystery - 150ms latency, 3% loss)
    - Continue monitoring
    - Press `3` - Chamber 18 if system handles it well
@@ -162,7 +162,7 @@ python3 monitor-the-ruckus.py --targets 192.168.1.100 --interval 10
 **Setup (30 min):**
 1. Clone repo and verify tc installed
 2. Start monitoring tool
-3. Verify QwikCam is reachable
+3. Verify camera is reachable
 
 **Progressive Testing (90 min):**
 1. **Chamber 1 - The Swarm** (20 min)
@@ -214,15 +214,15 @@ A: Deadman's switch triggers after 5 minutes (with 30-second warning). You can a
 **Q: How do I know it's actually working?**
 A:
 1. Watch the monitoring tool for latency/loss increases
-2. Run `ping <qwikcam-ip>` in another terminal
+2. Run `ping <camera-ip>` in another terminal
 3. Press `d` in chaos tool to see tc configuration
 4. Press `s` to see current status
 
 **Q: What's the best starting chamber?**
 A: Chamber 1 (The Swarm). It's noticeable but gentle.
 
-**Q: Can I target just the QwikCam?**
-A: Yes! Press `o`, choose `3` (Targeted IP), enter your QwikCam IP address.
+**Q: Can I target just the camera?**
+A: Yes! Press `o`, choose `3` (Targeted IP), enter your camera IP address.
 
 **Q: How do I test the entire network?**
 A: Press `o`, choose `2` (Network), follow prompts to enable gateway mode. Then configure devices to use server as gateway.

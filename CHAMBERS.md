@@ -44,7 +44,7 @@
 **When to use:**
 - Multiple devices on network
 - Standard business testing
-- Typical QwikCut deployment scenarios
+- Typical IP camera deployment scenarios
 - Upload queue testing
 
 ---

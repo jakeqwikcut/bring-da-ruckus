@@ -161,7 +161,7 @@ if level == 'shadow':
 - Network scope isolation
 
 **Use Cases:**
-- QwikCut camera system testing
+- IP camera system testing
 - Video streaming quality analysis
 - Cloud upload resilience testing
 - Network failure recovery validation
@@ -193,12 +193,10 @@ if level == 'shadow':
 ---
 
 ## Repository
-**GitHub**: https://github.com/jakeqwikcut/bring-da-ruckus
-**Author**: Jake Mammen
-**Created**: December 2025
-**License**: Internal QwikCut tool - All rights reserved
-
----
+**GitHub**: https://github.com/jakeqwikcut/bring-da-ruckus  
+**Author**: Jake Mammen  
+**Created**: December 2025  
+**License**: Open Source---
 
 **🥷 Wu-Tang is for the children. Test responsibly. 🥷**
 

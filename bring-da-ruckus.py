@@ -44,7 +44,7 @@ DISCLAIMER:
 ════════════════════════════════════════════════════════════════════════════════
 
 Bring Da Ruckus - Network Chaos Engineering Tool
-Inspired by Wu-Tang sword style for testing QwikCut camera systems
+Inspired by Wu-Tang sword style for network resilience testing
 Created by Jake Mammen - 2025
 
 Simulates network degradation scenarios using Linux tc (traffic control):
