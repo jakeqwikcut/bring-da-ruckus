@@ -11,21 +11,21 @@ import os
 def apply_camera_chaos(camera_ip, loss_percent):
     """Apply packet loss only to traffic from camera"""
     chain = "CAMERA_CHAOS"
-    
+
     # Create chain
     subprocess.run(f"iptables -N {chain}", shell=True, stderr=subprocess.DEVNULL)
     subprocess.run(f"iptables -F {chain}", shell=True, stderr=subprocess.DEVNULL)
-    
+
     # Drop packets from camera with probability
     probability = loss_percent / 100.0
     subprocess.run(
         f"iptables -A {chain} -s {camera_ip} -m statistic --mode random --probability {probability} -j DROP",
         shell=True, check=True
     )
-    
+
     # Apply to INPUT (packets coming from camera to Jetson)
     subprocess.run(f"iptables -I INPUT -j {chain}", shell=True, check=True)
-    
+
     print(f"\n✅ Applying {loss_percent}% packet loss to traffic FROM {camera_ip}")
     print(f"   📹 Camera → Jetson link now has chaos")
     print(f"   🌐 Jetson → Server link is NORMAL")
@@ -36,7 +36,9 @@ def clear_camera_chaos(camera_ip):
     subprocess.run(f"iptables -D INPUT -j {chain}", shell=True, stderr=subprocess.DEVNULL)
     subprocess.run(f"iptables -F {chain}", shell=True, stderr=subprocess.DEVNULL)
     subprocess.run(f"iptables -X {chain}", shell=True, stderr=subprocess.DEVNULL)
-    print(f"\n✅ Cleared all chaos for {camera_ip}")def show_status():
+    print(f"\n✅ Cleared all chaos for {camera_ip}")
+
+def show_status():
     """Show current iptables rules"""
     print("\n📊 Current iptables rules for camera:")
     subprocess.run(f"iptables -L CAMERA_CHAOS -n -v 2>/dev/null || echo 'No chaos active'", shell=True)
@@ -62,7 +64,7 @@ def interactive_mode(camera_ip):
     print(f"🎯 Target: {camera_ip}")
     print(f"📹 Affecting: Camera → Jetson only")
     print(f"🌐 Normal: Jetson → Server (your stream upload is fine)")
-    
+
     chambers = {
         '1': ('The Swarm', 1),
         '2': ('The Mystery', 9),
@@ -70,32 +72,32 @@ def interactive_mode(camera_ip):
         '4': ('The 36 Swords', 36),
         '5': ('Shaolin Shadow', 100)
     }
-    
+
     try:
         while True:
             show_menu()
             choice = input("\n👉 Enter your choice: ").strip().lower()
-            
+
             if choice == 'q':
                 print("\n👋 Exiting and cleaning up...")
                 clear_camera_chaos(camera_ip)
                 break
-            
+
             elif choice == 's':
                 show_status()
-            
+
             elif choice == 'c':
                 clear_camera_chaos(camera_ip)
-            
+
             elif choice in chambers:
                 name, loss = chambers[choice]
                 print(f"\n🥋 Applying: {name}")
                 clear_camera_chaos(camera_ip)  # Clear old first
                 apply_camera_chaos(camera_ip, loss)
-            
+
             else:
                 print("❌ Invalid choice")
-    
+
     except KeyboardInterrupt:
         print("\n\n⚠️  Interrupted! Cleaning up...")
         clear_camera_chaos(camera_ip)
@@ -107,7 +109,7 @@ if __name__ == "__main__":
         print("   Please run with sudo:")
         print(f"   sudo python3 {sys.argv[0]}")
         sys.exit(1)
-    
+
     # Show banner
     print("\n████████████████████████████████████████████████████████████████")
     print("██                                                            ██")
@@ -116,7 +118,7 @@ if __name__ == "__main__":
     print("██                                                            ██")
     print("████████████████████████████████████████████████████████████████")
     print()
-    
+
     # Get camera IP
     if len(sys.argv) > 1:
         camera_ip = sys.argv[1]
@@ -125,12 +127,12 @@ if __name__ == "__main__":
         if not camera_ip:
             print("❌ No IP address provided")
             sys.exit(1)
-    
+
     # Wu-Tang quote
     print()
     print("🥋 \"En garde, I'll let you try my Wu-Tang style\"")
     print()
     input("Press ENTER to continue...")
-    
+
     # Start interactive mode
     interactive_mode(camera_ip)
