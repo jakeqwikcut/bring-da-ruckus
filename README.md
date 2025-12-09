@@ -100,17 +100,25 @@ Use them together: monitor in one terminal while chaos tests run in another!
 
 ### Monitoring Tool (monitor-the-ruckus.py)
 
-- **Real-Time Dashboard**: Auto-refreshing network health display
+- **Real-Time Dashboard**: htop-style locked display with in-place value updates
 - **Local Device Monitoring**:
   - Interface statistics (packets, bytes, errors, drops)
   - Bandwidth usage (RX/TX in Mbps)
   - Visual health indicators 🟢🟡🔴
+  - Peak bandwidth tracking
 - **Target IP Monitoring**:
-  - Ping latency (min/avg/max)
-  - Packet loss percentage
+  - Ping latency (min/avg/max per target)
+  - Jitter measurement (mdev from ping)
+  - Packet loss percentage tracking
+  - Connection quality scoring (0-100)
+  - Quality status (Excellent/Good/Fair/Poor/Critical)
+  - Historical metrics (1-minute rolling averages)
   - Reachability status
-- **Multi-Target Support**: Monitor multiple IPs simultaneously
-- **Configurable Refresh**: Set custom update intervals
+- **Network Health Metrics**:
+  - TCP retransmit rate monitoring
+  - Configurable alert thresholds
+  - Multi-target support with individual quality scores
+- **Professional Display**: Alternate screen buffer mode like htop/jtop - no scrolling!
 
 ## Installation
 
@@ -175,18 +183,32 @@ Press `o` to choose:
 **Monitor your QwikCam during chaos tests:**
 
 ```bash
-# Monitor specific target
+# Monitor specific target with default settings
 python3 monitor-the-ruckus.py --targets 192.168.1.100
 
-# Monitor multiple targets
-python3 monitor-the-ruckus.py --targets 192.168.1.100 192.168.1.1
+# Monitor multiple targets (camera + gateway + server)
+python3 monitor-the-ruckus.py --targets 192.168.1.100 192.168.1.1 10.0.0.5
 
-# Custom refresh interval (default 5 seconds)
-python3 monitor-the-ruckus.py --targets 192.168.1.100 --interval 10
+# Custom refresh interval (default 2 seconds)
+python3 monitor-the-ruckus.py --targets 192.168.1.100 --interval 5
 
 # Specify network interface
 python3 monitor-the-ruckus.py --interface eth0 --targets 192.168.1.100
+
+# Configure alert thresholds (interactive prompts)
+python3 monitor-the-ruckus.py --targets 192.168.1.100
+# You'll be prompted for latency, packet loss, and jitter thresholds
 ```
+
+**Dashboard Features:**
+- 📊 Bandwidth history with peak tracking
+- 🎯 Per-target latency (min/avg/max)
+- 📉 Jitter measurement for each target
+- 💯 Connection quality scoring (0-100)
+- 🚦 Quality status indicators (Excellent/Good/Fair/Poor/Critical)
+- 📈 1-minute rolling average for historical context
+- 🔔 Alert highlighting when thresholds exceeded
+- 🖥️ htop-style locked display (no scrolling!)
 
 **Pro Tip:** Run monitoring in one terminal, chaos in another:
 ```bash
@@ -369,9 +391,13 @@ Uses `tc` (traffic control) with `netem` (network emulation):
 ### Monitoring Tool
 Real-time Python dashboard using:
 - `/proc/net/dev` for interface statistics
-- `ping` command for latency/loss measurements
+- `ping` command for latency/loss/jitter measurements
 - Bandwidth calculated from byte counters over time intervals
-- Auto-refreshing curses-style display
+- Quality scoring algorithm based on latency, loss, and jitter
+- Historical metrics with 60-sample deque for 1-minute averages
+- TCP retransmit rate from `netstat -s` parsing
+- **Alternate screen buffer mode** for htop-style locked display
+- ANSI escape codes for in-place value updates (no scrolling)
 
 ## Safety Features
 
@@ -436,10 +462,14 @@ Real-time network monitoring companion tool.
 
 **Key Features:**
 - Local device stats (packets, bytes, errors, drops)
-- Bandwidth monitoring (RX/TX Mbps)
-- Target ping monitoring (latency, packet loss)
-- Multi-target support
-- Auto-refreshing dashboard
+- Bandwidth monitoring (RX/TX Mbps) with peak tracking
+- Target ping monitoring (latency min/avg/max, jitter, packet loss)
+- Connection quality scoring (0-100) with status indicators
+- Historical metrics (1-minute rolling averages)
+- TCP retransmit rate tracking
+- Configurable alert thresholds
+- Multi-target support with per-target quality analysis
+- Auto-refreshing htop-style locked display (no scrolling!)
 - Visual health indicators 🟢🟡🔴
 
 ## QwikCut-Specific Testing

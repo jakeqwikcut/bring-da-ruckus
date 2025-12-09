@@ -57,9 +57,10 @@
 
 1. **Terminal 1 - Start Monitoring:**
    ```bash
-   python3 monitor-the-ruckus.py --targets 192.168.1.100 192.168.1.1
+   python3 monitor-the-ruckus.py --targets 192.168.1.100 192.168.1.1 --interval 2
    ```
-   You'll see real-time stats for your QwikCam and router.
+   You'll see real-time stats in an htop-style locked display for your QwikCam and router.
+   The screen updates in place without scrolling!
 
 2. **Terminal 2 - Apply Chaos:**
    ```bash
@@ -98,18 +99,29 @@
    ⬇️  Download: 45.2 Mbps
    ⬆️  Upload: 12.8 Mbps
    🔄 Total: 58.0 Mbps
+   📈 Peak: 62.3 Mbps                       ← Highest bandwidth seen
 
 🎯 TARGET MONITORING:
-   Target: 192.168.1.100
+   📍 camera (192.168.1.100)
    🟢 Status: REACHABLE                     ← Green = good
-      Latency: 52.3ms (min: 50.1, max: 55.8)
+      Latency: 52.3ms (min: 50.1, avg: 52.3, max: 55.8)
+      Jitter: 2.1ms                         ← Network stability
       Packet Loss: 1.2%                     ← Should match chamber specs
+      Quality: 92/100 🟢 Excellent          ← Overall connection quality
+      1-min avg: 53.1ms / 1.3% loss        ← Historical context
 ```
 
 **Health Indicators:**
-- 🟢 Green = Healthy
-- 🟡 Yellow = Warning (some packet loss)
-- 🔴 Red = Critical (unreachable or high loss)
+- 🟢 Green = Healthy (Quality: Excellent/Good)
+- 🟡 Yellow = Warning (Quality: Fair)
+- 🔴 Red = Critical (Quality: Poor/Critical)
+
+**Quality Scoring:**
+- 90-100: 🟢 Excellent
+- 75-89: 🟢 Good  
+- 50-74: 🟡 Fair
+- 25-49: 🔴 Poor
+- 0-24: 🔴 Critical
 
 ## Quick Command Reference
 
