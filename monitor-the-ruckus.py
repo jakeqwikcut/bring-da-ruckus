@@ -217,7 +217,8 @@ class NetworkMonitor:
 
     def display_dashboard(self):
         """Display comprehensive monitoring dashboard"""
-        os.system('clear')
+        # Use ANSI escape codes to clear screen and move cursor to top
+        print("\033[2J\033[H", end='')
         
         print("=" * 80)
         print("                🥷 MONITOR THE RUCKUS - Network Health 🥷")
