@@ -71,9 +71,11 @@ Simulates network degradation scenarios using Linux tc (traffic control):
 
 Bring Da Ruckus is a network chaos engineering toolkit designed to test QwikCut camera systems under adverse network conditions. Deploy it on your Ubuntu server to simulate real-world network problems that can affect video streaming, recording quality, and cloud synchronization.
 
-**Two powerful tools:**
-1. **bring-da-ruckus.py** - Apply network chaos (latency, packet loss, bandwidth limits)
-2. **monitor-the-ruckus.py** - Real-time network health monitoring
+**Four powerful tools:**
+1. **bring-da-ruckus.py** - Full-featured chaos tool with tc/netem (latency, jitter, packet loss, bandwidth)
+2. **bring-da-ruckus-iptables.py** - Jetson-compatible chaos tool (packet loss only, no netem required)
+3. **camera-chaos.py** - Camera-specific chaos targeting for precision testing
+4. **monitor-the-ruckus.py** - Real-time network health monitoring with quality scoring
 
 Use them together: monitor in one terminal while chaos tests run in another!
 
@@ -119,6 +121,64 @@ Use them together: monitor in one terminal while chaos tests run in another!
   - Configurable alert thresholds
   - Multi-target support with individual quality scores
 - **Professional Display**: Alternate screen buffer mode like htop/jtop - no scrolling!
+
+## Which Tool Should I Use?
+
+### 🎯 Scenario-Based Tool Selection
+
+**I have an Ubuntu server and want full network testing capabilities:**
+→ Use **bring-da-ruckus.py** (full tc/netem version)
+- Simulates latency, jitter, packet loss, and bandwidth throttling
+- Most realistic network conditions
+- Complete testing capabilities
+
+**I have a Jetson Nano or kernel without netem module:**
+→ Use **bring-da-ruckus-iptables.py** (iptables version)
+- Works without netem kernel module
+- Packet loss simulation only
+- Good for basic resilience testing
+
+**I want to test a specific camera without affecting other devices:**
+→ Use **camera-chaos.py** (camera-specific tool)
+- Targets one camera IP address
+- Packet loss testing with Wu-Tang themed menu
+- Perfect for isolated camera testing
+
+**I want to monitor network health during testing:**
+→ Use **monitor-the-ruckus.py** (always!)
+- Run alongside any chaos tool
+- Real-time metrics with quality scoring
+- htop-style display with comprehensive stats
+
+### 💡 Recommended Combinations
+
+**Full Testing on Ubuntu Server:**
+```bash
+# Terminal 1: Monitor
+python3 monitor-the-ruckus.py --targets 192.168.1.100 192.168.1.1
+
+# Terminal 2: Chaos with full capabilities
+sudo python3 bring-da-ruckus.py
+```
+
+**Testing on Jetson Nano:**
+```bash
+# Terminal 1: Monitor
+python3 monitor-the-ruckus.py --targets 192.168.1.100
+
+# Terminal 2: Packet loss chaos only
+sudo python3 bring-da-ruckus-iptables.py
+```
+
+**Camera-Specific Testing:**
+```bash
+# Terminal 1: Monitor the camera
+python3 monitor-the-ruckus.py --targets 192.168.1.78
+
+# Terminal 2: Target that camera
+sudo python3 camera-chaos.py
+# Enter camera IP: 192.168.1.78
+```
 
 ## Installation
 
@@ -447,18 +507,67 @@ Real-time Python dashboard using:
 
 ## Tools in the Toolkit
 
-### bring-da-ruckus.py - Chaos Generator
-Apply network disruptions using Linux traffic control.
+### bring-da-ruckus.py - Full-Featured Chaos Generator
+Apply network disruptions using Linux traffic control with tc/netem.
 
 **Key Features:**
 - 6 progressive chambers (Peace → Shaolin Shadow)
+- Full network emulation: latency, jitter, packet loss, bandwidth throttling
 - 3 scope modes (Local / Network / Targeted)
 - Smart deadman's switch (5 min with 30s warning)
+- SSH port protection with iptables
 - Interactive Wu-Tang themed CLI
 - Auto-cleanup on exit
 
-### monitor-the-ruckus.py - Health Monitor
-Real-time network monitoring companion tool.
+**Requirements:** Linux kernel with netem module (tc/netem)
+
+**Best For:** Ubuntu servers, complete network testing scenarios
+
+---
+
+### bring-da-ruckus-iptables.py - Jetson-Compatible Chaos Tool
+Packet loss simulation using iptables for systems without netem.
+
+**Key Features:**
+- Packet loss only (1%, 9%, 18%, 36%, 100%)
+- Works without netem kernel module
+- Uses iptables statistic module
+- INPUT/OUTPUT/FORWARD chain support
+- SSH protection included
+- Interactive Wu-Tang themed CLI
+
+**Requirements:** iptables only (no netem needed)
+
+**Best For:** Jetson Nano, embedded systems, kernels without netem module
+
+**Limitations:** Cannot simulate latency, jitter, or bandwidth throttling
+
+---
+
+### camera-chaos.py - Camera-Specific Precision Tool
+Target specific camera IP addresses with precision chaos testing.
+
+**Key Features:**
+- 5 chambers: Swarm (1%), Mystery (9%), Venoms (18%), Swords (36%), Shaolin (100%)
+- Targets specific camera IP (e.g., 192.168.1.78)
+- Interactive Wu-Tang menu with famous quotes
+- Status and clear commands
+- Perfect for testing single camera behavior
+
+**Requirements:** iptables
+
+**Best For:** Testing specific QwikCam without affecting other devices
+
+**Usage:**
+```bash
+sudo python3 camera-chaos.py
+# Follow interactive menu to target your camera
+```
+
+---
+
+### monitor-the-ruckus.py - Network Health Monitor
+Real-time network monitoring companion tool with comprehensive metrics.
 
 **Key Features:**
 - Local device stats (packets, bytes, errors, drops)
@@ -471,6 +580,15 @@ Real-time network monitoring companion tool.
 - Multi-target support with per-target quality analysis
 - Auto-refreshing htop-style locked display (no scrolling!)
 - Visual health indicators 🟢🟡🔴
+
+**Requirements:** Python 3.7+ (standard library only)
+
+**Best For:** Real-time monitoring during all chaos tests
+
+**Usage:**
+```bash
+python3 monitor-the-ruckus.py --targets 192.168.1.100 --interval 2
+```
 
 ## QwikCut-Specific Testing
 
