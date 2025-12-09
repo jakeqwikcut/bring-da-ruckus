@@ -7,6 +7,15 @@ Apply chaos ONLY to traffic from specific camera IP (simulates bad LAN/WiFi repe
 import subprocess
 import sys
 import os
+import re
+
+def validate_ip(ip):
+    """Validate IP address format"""
+    pattern = r'^(\d{1,3}\.){3}\d{1,3}$'
+    if not re.match(pattern, ip):
+        return False
+    parts = ip.split('.')
+    return all(0 <= int(part) <= 255 for part in parts)
 
 def apply_camera_chaos(camera_ip, loss_percent):
     """Apply packet loss only to traffic from camera"""
@@ -127,6 +136,12 @@ if __name__ == "__main__":
         if not camera_ip:
             print("❌ No IP address provided")
             sys.exit(1)
+    
+    # Validate IP address
+    if not validate_ip(camera_ip):
+        print(f"❌ Invalid IP address: {camera_ip}")
+        print("   Please enter a valid IPv4 address (e.g., 192.168.1.100)")
+        sys.exit(1)
 
     # Wu-Tang quote
     print()
