@@ -242,13 +242,13 @@ class NetworkRuckus:
             # Convert percentage to probability for iptables (--probability expects 0.0-1.0, e.g. 0.01 = 1% drop rate)
             probability = level['packet_loss_pct'] / 100.0
 
-            # Drop packets randomly based on probability
+            # Drop packets randomly - NO IP FILTERING to affect ALL traffic including local network
             subprocess.run(
                 f"iptables -A {self.iptables_chain} -m statistic --mode random --probability {probability} -j DROP",
                 shell=True, check=True
             )
 
-            # Jump to our chain for incoming and outgoing
+            # Jump to our chain for ALL traffic (INPUT, OUTPUT, FORWARD)
             subprocess.run(
                 f"iptables -I INPUT -i {self.interface} -j {self.iptables_chain}",
                 shell=True, check=True
@@ -257,11 +257,19 @@ class NetworkRuckus:
                 f"iptables -I OUTPUT -o {self.interface} -j {self.iptables_chain}",
                 shell=True, check=True
             )
+            # FORWARD chain catches traffic passing through (like from cameras)
+            subprocess.run(
+                f"iptables -I FORWARD -i {self.interface} -j {self.iptables_chain}",
+                shell=True, stderr=subprocess.DEVNULL
+            )
+            subprocess.run(
+                f"iptables -I FORWARD -o {self.interface} -j {self.iptables_chain}",
+                shell=True, stderr=subprocess.DEVNULL
+            )
 
+            
             print(f"   ✅ Applied on interface: {self.interface}")
-            print(f"   📉 Packet Loss: {level['packet_loss_pct']}%")
-
-        self.current_chamber = level
+            print(f"   📉 Packet Loss: {level['packet_loss_pct']}% (ALL TRAFFIC including local network)")        self.current_chamber = level
         self.is_active = (level != ChaosChamber.PEACE)
         self.deadman.reset()
         return True
