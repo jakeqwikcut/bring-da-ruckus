@@ -42,6 +42,19 @@ DISCLAIMER:
 
 ════════════════════════════════════════════════════════════════════════════════
 
+⚠️  **CRITICAL: READ [SAFETY-GUIDE.md](SAFETY-GUIDE.md) BEFORE USING SHAOLIN SHADOW** ⚠️
+
+This tool can and WILL lock you out of your server if used improperly.
+Chamber 6 (Shaolin Shadow - 100% packet loss) requires special precautions.
+
+**Safety features NOW ENABLED:**
+- 🛡️  SSH port 22 automatic protection
+- 🛡️  Management IP whitelist
+- ⚠️  Mandatory confirmation for Shaolin Shadow
+- 🆘 Emergency recovery script included
+
+════════════════════════════════════════════════════════════════════════════════
+
 Bring Da Ruckus - Network Chaos Engineering Tool
 Inspired by Wu-Tang sword style for testing QwikCut camera systems
 Created by Jake Mammen - 2025
@@ -74,7 +87,7 @@ Use them together: monitor in one terminal while chaos tests run in another!
   - 🌐 **Entire Network**: Gateway mode - disrupts all traffic flowing through server
   - 🎯 **Targeted IP**: Precision chaos for specific devices (perfect for QwikCam testing)
 - **Interactive CLI**: Real-time control with Wu-Tang themed interface
-- **Smart Deadman's Switch**: 
+- **Smart Deadman's Switch**:
   - 5-minute timeout with 30-second warning
   - Prompts to continue or auto-stops
   - Prevents accidental long-term disruption
@@ -180,7 +193,7 @@ python3 monitor-the-ruckus.py --interface eth0 --targets 192.168.1.100
 # Terminal 1
 python3 monitor-the-ruckus.py --targets 192.168.1.100
 
-# Terminal 2  
+# Terminal 2
 sudo python3 bring-da-ruckus.py
 # Press 'o', select '3' (Targeted IP), enter 192.168.1.100
 # Then select a chamber and watch the chaos unfold!
@@ -418,7 +431,7 @@ Apply network disruptions using Linux traffic control.
 - Interactive Wu-Tang themed CLI
 - Auto-cleanup on exit
 
-### monitor-the-ruckus.py - Health Monitor  
+### monitor-the-ruckus.py - Health Monitor
 Real-time network monitoring companion tool.
 
 **Key Features:**

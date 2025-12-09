@@ -157,7 +157,7 @@ python3 monitor-the-ruckus.py --targets 192.168.1.100 --interval 10
    - Set scope to Targeted IP
    - Monitor stream quality
    - Check upload timing
-   
+
 2. **Chamber 2 - The Mystery** (20 min)
    - Observe degradation
    - Note upload queue behavior
@@ -200,7 +200,7 @@ A: No. All changes are temporary and automatically reversed when you quit or aft
 A: Deadman's switch triggers after 5 minutes (with 30-second warning). You can also SSH from another machine and run `sudo python3 bring-da-ruckus.py --restore`
 
 **Q: How do I know it's actually working?**
-A: 
+A:
 1. Watch the monitoring tool for latency/loss increases
 2. Run `ping <qwikcam-ip>` in another terminal
 3. Press `d` in chaos tool to see tc configuration
@@ -224,7 +224,7 @@ A: Run with `--timeout <minutes>`: `sudo python3 bring-da-ruckus.py --timeout 10
 ## See Full Documentation
 
 - **README.md** - Complete feature guide
-- **CHAMBERS.md** - Detailed chamber descriptions  
+- **CHAMBERS.md** - Detailed chamber descriptions
 - **test-scenarios.md** - 8 comprehensive test scenarios
 - **examples.sh** - Command examples
 - **UBUNTU-DEPLOYMENT.md** - Deployment guide

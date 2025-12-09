@@ -1,0 +1,25 @@
+[Unit]
+Description=Bring Da Ruckus - Network Chaos Testing Tool
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/bring-da-ruckus
+ExecStart=/usr/bin/python3 /opt/bring-da-ruckus/bring-da-ruckus.py --daemon
+ExecStop=/usr/bin/python3 /opt/bring-da-ruckus/bring-da-ruckus.py --restore
+Restart=on-failure
+RestartSec=10s
+
+# Security settings
+PrivateTmp=yes
+NoNewPrivileges=no
+ProtectSystem=strict
+ReadWritePaths=/tmp /var/log
+
+# Watchdog for deadman's switch
+WatchdogSec=120s
+
+[Install]
+WantedBy=multi-user.target

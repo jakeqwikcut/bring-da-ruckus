@@ -215,6 +215,30 @@ class NetworkRuckus:
         self.target_ip = None
         self.scope = 'local'  # 'local', 'network', or 'targeted'
         self.gateway_configured = False
+        self.ssh_client_ip = self._detect_ssh_client_ip()
+        self.management_whitelist = [self.ssh_client_ip] if self.ssh_client_ip else []
+        self.ssh_protection_enabled = True
+
+    def _detect_ssh_client_ip(self):
+        """Detect the IP address of the SSH client for protection"""
+        try:
+            ssh_client = os.environ.get('SSH_CLIENT', '').split()[0]
+            if ssh_client:
+                return ssh_client
+
+            # Try alternative method
+            result = subprocess.run(
+                ["who", "am", "i"],
+                capture_output=True, text=True
+            )
+            # Parse output like: vision pts/0 2025-12-08 10:30 (192.168.1.50)
+            import re
+            match = re.search(r'\((\d+\.\d+\.\d+\.\d+)\)', result.stdout)
+            if match:
+                return match.group(1)
+        except:
+            pass
+        return None
 
     def detect_interface(self):
         """Auto-detect the primary network interface"""
@@ -317,17 +341,59 @@ class NetworkRuckus:
                       shell=True, stderr=subprocess.DEVNULL)
 
         if level['packet_loss_pct'] == 100:
-            # Complete outage
+            # Complete outage - CRITICAL: Protect SSH access!
             if self.scope == 'targeted' and self.target_ip:
                 # Targeted outage using iptables
                 subprocess.run(f"iptables -A INPUT -s {self.target_ip} -j DROP", shell=True, check=True)
                 subprocess.run(f"iptables -A OUTPUT -d {self.target_ip} -j DROP", shell=True, check=True)
                 print(f"   ☠️  Complete outage for {self.target_ip}")
             else:
+                # SAFETY: Always exempt SSH traffic (port 22)
+                # --- SSH Protection Logic ---
+                # Order of operations is CRITICAL:
+                    res = subprocess.run(
+                        f"iptables -I INPUT -p tcp --dport 22 -j ACCEPT",
+                        shell=True, capture_output=True
+                    )
+                    if res.returncode != 0:
+                        print(f"   ❌ Failed to protect SSH INPUT rule: {res.stderr.decode().strip()}", file=sys.stderr)
+                    res = subprocess.run(
+                        f"iptables -I OUTPUT -p tcp --sport 22 -j ACCEPT",
+                        shell=True, capture_output=True
+                    )
+                    if res.returncode != 0:
+                        print(f"   ❌ Failed to protect SSH OUTPUT rule: {res.stderr.decode().strip()}", file=sys.stderr)
+
+                    # Exempt management IPs
+                    for mgmt_ip in self.management_whitelist:
+                        res = subprocess.run(
+                            f"iptables -I INPUT -s {mgmt_ip} -j ACCEPT",
+                            shell=True, capture_output=True
+                        )
+                        if res.returncode != 0:
+                            print(f"   ❌ Failed to whitelist management INPUT for {mgmt_ip}: {res.stderr.decode().strip()}", file=sys.stderr)
+                        res = subprocess.run(
+                            f"iptables -I OUTPUT -d {mgmt_ip} -j ACCEPT",
+                            shell=True, capture_output=True
+                        )
+                        if res.returncode != 0:
+                            print(f"   ❌ Failed to whitelist management OUTPUT for {mgmt_ip}: {res.stderr.decode().strip()}", file=sys.stderr)
+                            shell=True, stderr=subprocess.DEVNULL
+                        )
+                        subprocess.run(
+                            f"iptables -I OUTPUT -d {mgmt_ip} -j ACCEPT",
+                            shell=True, stderr=subprocess.DEVNULL
+                        )
+
+                    print(f"   🛡️  SSH (port 22) protected from chaos")
+                    if self.ssh_client_ip:
+                        print(f"   🛡️  Management IP {self.ssh_client_ip} whitelisted")
+
                 cmd = f"tc qdisc add dev {self.interface} root netem loss 100%"
                 subprocess.run(cmd, shell=True, check=True)
                 scope_msg = "entire network" if self.scope == 'network' else "this device"
                 print(f"   ☠️  Complete network outage on {self.interface} ({scope_msg})")
+                print(f"   ⚠️  SSH access maintained via iptables exemption")
 
         elif level == ChaosChamber.PEACE:
             # Clear iptables rules too
@@ -412,6 +478,38 @@ class NetworkRuckus:
 
         subprocess.run(f"tc qdisc del dev {self.interface} root",
                       shell=True, stderr=subprocess.DEVNULL)
+        subprocess.run(f"tc filter del dev {self.interface}",
+                      shell=True, stderr=subprocess.DEVNULL)
+
+        # Clear any iptables DROP rules if we had a target
+        if self.target_ip:
+            subprocess.run(f"iptables -D INPUT -s {self.target_ip} -j DROP",
+                         shell=True, stderr=subprocess.DEVNULL)
+            subprocess.run(f"iptables -D OUTPUT -d {self.target_ip} -j DROP",
+                         shell=True, stderr=subprocess.DEVNULL)
+
+        # Clear SSH protection iptables rules
+        if self.ssh_protection_enabled:
+            subprocess.run(
+                "iptables -D INPUT -p tcp --dport 22 -j ACCEPT",
+                shell=True, stderr=subprocess.DEVNULL
+            )
+            subprocess.run(
+                "iptables -D OUTPUT -p tcp --sport 22 -j ACCEPT",
+                shell=True, stderr=subprocess.DEVNULL
+            )
+
+            # Clear management IP whitelist
+            for mgmt_ip in self.management_whitelist:
+                subprocess.run(
+                    f"iptables -D INPUT -s {mgmt_ip} -j ACCEPT",
+                    shell=True, stderr=subprocess.DEVNULL
+                )
+                subprocess.run(
+                    f"iptables -D OUTPUT -d {mgmt_ip} -j ACCEPT",
+                    shell=True, stderr=subprocess.DEVNULL
+                )
+
         print(f"   ✅ Network restored to normal on {self.interface}")
         print(f"   ☯️  Peace has been restored to the chambers")
 
@@ -579,7 +677,41 @@ def interactive_mode(ruckus: NetworkRuckus):
                 chamber_idx = int(choice) - 1
                 chambers = ChaosChamber.all_chambers()
                 if 0 <= chamber_idx < len(chambers):
-                    ruckus.apply_ruckus(chambers[chamber_idx])
+                    chamber = chambers[chamber_idx]
+
+                    # CRITICAL SAFETY: Confirm Shaolin Shadow (100% packet loss)
+                    if chamber['packet_loss_pct'] == 100:
+                        print("\n" + "="*70)
+                        print("⚠️  ☠️  CRITICAL WARNING: SHAOLIN SHADOW ☠️  ⚠️")
+                        print("="*70)
+                        print("You are about to apply 100% PACKET LOSS!")
+                        print()
+                        print("THIS WILL:")
+                        print("  • Block ALL network traffic on this interface")
+                        if ruckus.scope == 'network':
+                            print("  • Affect ENTIRE NETWORK (gateway mode active)")
+                        print("  • Potentially lock you out if SSH protection fails")
+                        print()
+                        print(f"SSH Protection: {'🛡️  ENABLED' if ruckus.ssh_protection_enabled else '❌ DISABLED'}")
+                        if ruckus.ssh_client_ip:
+                            print(f"Your IP: {ruckus.ssh_client_ip} (will be whitelisted)")
+                        confirm = input("Type 'YES I AM SURE' to continue (leading/trailing spaces are ignored): ").strip()
+                            print("⚠️  Could not detect your SSH IP - protection may fail!")
+                        print()
+                        print("Are you ABSOLUTELY SURE you want to proceed?")
+                        print("="*70)
+
+                        confirm = input("Type 'YES I AM SURE' to continue: ").strip()
+                        if confirm != "YES I AM SURE":
+                            print("❌ Shaolin Shadow cancelled - wisdom prevails")
+                            continue
+
+                        print("\n🔥 Applying Shaolin Shadow in 3 seconds... (Ctrl+C to abort)")
+                        for i in range(3, 0, -1):
+                            print(f"   {i}...")
+                            time.sleep(1)
+
+                    ruckus.apply_ruckus(chamber)
                 else:
                     print("❌ Invalid chamber number")
 

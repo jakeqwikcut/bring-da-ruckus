@@ -75,7 +75,7 @@ class NetworkMonitor:
                 dev_idx = words.index("dev")
                 if dev_idx + 1 < len(words):
                     return words[dev_idx + 1]
-        except:
+        except Exception:
             pass
         return "eth0"
 
@@ -112,7 +112,7 @@ class NetworkMonitor:
                 ["ping", "-c", str(count), "-W", "2", ip],
                 capture_output=True, text=True, timeout=10
             )
-            
+
             stats = {
                 'ip': ip,
                 'reachable': result.returncode == 0,
@@ -154,7 +154,7 @@ class NetworkMonitor:
         if 'error' not in stats1 and 'error' not in stats2:
             rx_rate = (stats2['rx_bytes'] - stats1['rx_bytes']) * 8 / 1_000_000  # Mbps
             tx_rate = (stats2['tx_bytes'] - stats1['tx_bytes']) * 8 / 1_000_000  # Mbps
-            
+
             return {
                 'rx_mbps': round(rx_rate, 2),
                 'tx_mbps': round(tx_rate, 2),
@@ -170,18 +170,18 @@ class NetworkMonitor:
                 ["ip", "-4", "addr", "show", self.interface],
                 capture_output=True, text=True, check=True
             )
-            
+
             # Extract network CIDR
             match = re.search(r'inet ([\d.]+/\d+)', result.stdout)
             if not match:
                 return []
 
             network = match.group(1)
-            
+
             # Use arp-scan if available, otherwise use nmap or simple ping sweep
             # For now, use a simple approach
             print(f"   🔍 Scanning network {network}...")
-            
+
             return []  # Placeholder - full implementation would scan the network
         except Exception as e:
             return []
@@ -189,7 +189,7 @@ class NetworkMonitor:
     def display_dashboard(self):
         """Display real-time monitoring dashboard"""
         os.system('clear' if os.name == 'posix' else 'cls')
-        
+
         print("=" * 80)
         print("                    🥷 MONITOR THE RUCKUS - Network Health 🥷")
         print("=" * 80)
@@ -203,10 +203,10 @@ class NetworkMonitor:
         if 'error' not in stats:
             print(f"   RX: {stats['rx_packets']:,} packets ({stats['rx_bytes']:,} bytes)")
             print(f"   TX: {stats['tx_packets']:,} packets ({stats['tx_bytes']:,} bytes)")
-            
+
             error_status = "🟢" if stats['rx_errors'] + stats['tx_errors'] == 0 else "🔴"
             print(f"   {error_status} Errors: RX={stats['rx_errors']}, TX={stats['tx_errors']}")
-            
+
             drop_status = "🟢" if stats['rx_dropped'] + stats['tx_dropped'] == 0 else "🟡"
             print(f"   {drop_status} Dropped: RX={stats['rx_dropped']}, TX={stats['tx_dropped']}")
         else:
@@ -228,7 +228,7 @@ class NetworkMonitor:
             for target in self.target_ips:
                 print(f"\n   Target: {target}")
                 ping_stats = self.ping_target(target, count=3)
-                
+
                 if ping_stats['reachable']:
                     health = "🟢" if ping_stats['packet_loss'] == 0 else "🟡" if ping_stats['packet_loss'] < 10 else "🔴"
                     print(f"   {health} Status: REACHABLE")
@@ -247,7 +247,7 @@ class NetworkMonitor:
     def run_continuous(self, interval: int = 5):
         """Run continuous monitoring"""
         self.running = True
-        
+
         if not self.interface:
             self.interface = self.detect_interface()
 

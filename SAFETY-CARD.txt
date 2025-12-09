@@ -1,0 +1,108 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                                                                            ║
+║                    🛡️  SHAOLIN SHADOW SAFETY CARD 🛡️                       ║
+║                         Before Using Chamber 6                             ║
+║                                                                            ║
+╠════════════════════════════════════════════════════════════════════════════╣
+║                                                                            ║
+║  MANDATORY CHECKS:                                                         ║
+║                                                                            ║
+║  ☐  Running in screen or tmux        (Ctrl+A D to detach)                 ║
+║  ☐  SSH Protection: ENABLED          (Auto-detected)                      ║
+║  ☐  Your IP: ___.___.___.___ OK      (Shows at startup)                   ║
+║  ☐  Physical access available        (Or IPMI/iLO)                        ║
+║  ☐  Emergency script ready           (./emergency-recovery.sh)            ║
+║  ☐  Tested Chambers 1-5 first        (Progressive testing)                ║
+║  ☐  Read SAFETY-GUIDE.md             (Know the risks)                     ║
+║  ☐  Team notified                    (Someone knows you're testing)       ║
+║                                                                            ║
+╠════════════════════════════════════════════════════════════════════════════╣
+║                                                                            ║
+║  SAFETY FEATURES ACTIVE:                                                   ║
+║                                                                            ║
+║  🛡️  SSH Port 22: Protected via iptables                                  ║
+║  🛡️  Management IP: Whitelisted automatically                             ║
+║  ⏰ Deadman's Switch: 5 minutes (if in screen)                            ║
+║  ⚠️  Confirmation: "YES I AM SURE" required                               ║
+║  ⏱️  Countdown: 3 seconds with Ctrl+C abort                               ║
+║                                                                            ║
+╠════════════════════════════════════════════════════════════════════════════╣
+║                                                                            ║
+║  IF LOCKED OUT:                                                            ║
+║                                                                            ║
+║  1. Don't panic - server is fine                                          ║
+║  2. Wait 5 min if in screen (deadman's switch)                            ║
+║  3. Physical console: sudo ./emergency-recovery.sh                        ║
+║  4. Or just reboot: sudo reboot                                           ║
+║  5. Read LOCKED-OUT.md for details                                        ║
+║                                                                            ║
+╠════════════════════════════════════════════════════════════════════════════╣
+║                                                                            ║
+║  QUICK START:                                                              ║
+║                                                                            ║
+║  $ screen -S ruckus                                                        ║
+║  $ sudo python3 bring-da-ruckus.py                                        ║
+║                                                                            ║
+║  Look for: SSH Protection: 🛡️  ENABLED                                    ║
+║  Look for: Your IP: x.x.x.x (will be whitelisted)                         ║
+║                                                                            ║
+║  Test progression: 1 → 2 → 3 → 4 → 5 → 6                                  ║
+║                                                                            ║
+╠════════════════════════════════════════════════════════════════════════════╣
+║                                                                            ║
+║  REMEMBER:                                                                 ║
+║                                                                            ║
+║  • This tool WILL lock you out if safety procedures ignored               ║
+║  • SSH protection is automatic BUT requires process in screen             ║
+║  • Physical reboot clears ALL rules (always works)                        ║
+║  • Test on non-critical systems first                                     ║
+║  • "Protect Ya Neck" applies to SSH connections too                       ║
+║                                                                            ║
+╠════════════════════════════════════════════════════════════════════════════╣
+║                                                                            ║
+║  SCOPE AWARENESS:                                                          ║
+║                                                                            ║
+║  🖥️  Local:      Affects only this server                                 ║
+║  🌐 Network:     Affects ENTIRE NETWORK (gateway mode)                    ║
+║  🎯 Targeted:    Affects specific IP only (safest for testing)            ║
+║                                                                            ║
+║  Recommended: Start with Targeted mode on test device                     ║
+║                                                                            ║
+╠════════════════════════════════════════════════════════════════════════════╣
+║                                                                            ║
+║  EMERGENCY CONTACTS:                                                       ║
+║                                                                            ║
+║  Physical Access:  _______________________                                ║
+║  IPMI/iLO URL:     _______________________                                ║
+║  Team Lead:        _______________________                                ║
+║  On-Call:          _______________________                                ║
+║                                                                            ║
+╠════════════════════════════════════════════════════════════════════════════╣
+║                                                                            ║
+║  RECOVERY TIMELINE:                                                        ║
+║                                                                            ║
+║  Deadman's switch:     0-5 minutes   (if in screen)                       ║
+║  Physical console:     5-10 minutes  (run recovery script)                ║
+║  IPMI/iLO:            5-10 minutes  (remote console or reboot)            ║
+║  Physical reboot:      2-5 minutes   (power cycle)                        ║
+║                                                                            ║
+╠════════════════════════════════════════════════════════════════════════════╣
+║                                                                            ║
+║  DOCUMENTATION:                                                            ║
+║                                                                            ║
+║  📖 SAFETY-GUIDE.md    - Complete safety procedures                       ║
+║  🆘 LOCKED-OUT.md      - Emergency recovery guide                         ║
+║  📊 POST-MORTEM.md     - Learn from our mistake                           ║
+║  📋 WHATS-FIXED.md     - Summary of improvements                          ║
+║  🔧 QUICKSTART.md      - Getting started guide                            ║
+║                                                                            ║
+╠════════════════════════════════════════════════════════════════════════════╣
+║                                                                            ║
+║  "Protect Ya Neck" - Wu-Tang Clan                                         ║
+║  "...and Protect Ya SSH" - Bring Da Ruckus v2.0                           ║
+║                                                                            ║
+║  ☯️  May the Shaolin Shadow be with you (but not your SSH)  ☯️             ║
+║                                                                            ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+PRINT THIS AND KEEP IT HANDY DURING CHAOS TESTING
