@@ -1,19 +1,38 @@
-# QwikCut Camera System Test Scenarios
+# IP Camera System Test Scenarios
 ## The 36 Chambers of Chaos - Testing Methodology
 
 **Created by Jake Mammen - 2025**
 
-Use these scenarios to systematically test how your QwikCut camera system behaves under various network conditions. Progress through the chambers from peace to total darkness.
+Use these scenarios to systematically test how your IP camera system behaves under various network conditions. Progress through the chambers from peace to total darkness.
 
 🥷 **Wu-Tang is for the children. Test responsibly.** 🥷
 
+## Tool Selection
+
+Before starting, choose the right tool:
+
+- **Full Testing (Ubuntu + netem)**: Use `bring-da-ruckus.py` for complete network simulation
+- **Packet Loss Only (Jetson/No netem)**: Use `bring-da-ruckus-iptables.py`
+- **Camera-Specific Testing**: Use `camera-chaos.py` to target one camera
+- **Monitoring (Always)**: Run `monitor-the-ruckus.py` in separate terminal
+
+**Recommended Setup:**
+```bash
+# Terminal 1: Monitoring with htop-style display
+python3 monitor-the-ruckus.py --targets <camera-ip> <gateway-ip> --interval 2
+
+# Terminal 2: Chaos testing
+sudo python3 bring-da-ruckus.py  # or bring-da-ruckus-iptables.py
+```
+
 ## Pre-Test Checklist
 
-- [ ] QwikCam is online and streaming
+- [ ] Camera is online and streaming
 - [ ] Baseline metrics recorded (normal operation)
-- [ ] Monitoring tools ready (stream viewer, S3 console, logs)
+- [ ] Monitoring tools ready (stream viewer, cloud console, logs)
 - [ ] Test duration planned (typically 10-30 minutes per scenario)
-- [ ] Deadman switch timeout set appropriately
+- [ ] Deadman switch timeout set appropriately (5-30 minutes)
+- [ ] Know your recovery procedures (see LOCKED-OUT.md for emergencies)
 
 ## Baseline (No Ruckus)
 
@@ -26,9 +45,10 @@ Use these scenarios to systematically test how your QwikCut camera system behave
 **What to Monitor:**
 - RTSP stream quality and bitrate
 - Video file upload timing
-- S3 upload success rate
+- Cloud upload success rate
 - API response times
-- WebSocket command latency
+- Command latency
+- Monitor dashboard: Quality score, latency, jitter, packet loss
 
 **Expected Results:**
 - Smooth stream at configured quality
@@ -55,6 +75,7 @@ Use these scenarios to systematically test how your QwikCut camera system behave
 - Upload timing (may be slightly delayed)
 - Buffer/queue behavior
 - Command responsiveness
+- Monitor shows: ~50ms latency, ~1% loss, quality score 85-95
 
 **Expected Results:**
 - Minor stream quality impact
@@ -84,6 +105,7 @@ Use these scenarios to systematically test how your QwikCut camera system behave
 - Upload queue building up
 - Storage space consumption
 - Error rates in logs
+- Monitor shows: ~150ms latency, ~3% loss, quality score 70-85, jitter increasing
 
 **Expected Results:**
 - Stream quality reduced but stable
@@ -115,6 +137,7 @@ Use these scenarios to systematically test how your QwikCut camera system behave
 - Upload success vs. failure rate
 - Retry logic behavior
 - System resource usage (CPU, memory, storage)
+- Monitor shows: ~300ms latency, ~8% loss, quality score 50-70 (Fair), high jitter
 
 **Expected Results:**
 - Significant quality degradation
@@ -146,6 +169,7 @@ Use these scenarios to systematically test how your QwikCut camera system behave
 - Upload attempts vs. successes
 - Error handling and logging
 - System stability
+- Monitor shows: ~500ms latency, ~15% loss, quality score 25-50 (Poor/Critical)
 
 **Expected Results:**
 - Cloud services mostly unavailable
@@ -181,6 +205,7 @@ Use these scenarios to systematically test how your QwikCut camera system behave
 - Automatic reconnection
 - Upload queue processing after recovery
 - Data integrity of queued uploads
+- Monitor shows: UNREACHABLE status, 100% loss, quality score 0 (Critical)
 
 **Expected Results:**
 - Recording never stops
@@ -236,11 +261,18 @@ Use these scenarios to systematically test how your QwikCut camera system behave
 
 **Goal:** Isolate camera-to-cloud path specifically
 
-**Chaos Chamber:** ⚔️ Chamber 9: The Mystery (with target IP)
+**Chaos Chamber:** ⚔️ Chamber 9: The Mystery (with targeted IP)
 
 **Setup:**
 ```bash
-sudo python3 bring-da-ruckus.py --target [QWIKCAM_IP] --level ninth
+# Option 1: Full version with targeted scope
+sudo python3 bring-da-ruckus.py
+# Press 'o', choose '3' (Targeted IP), enter camera IP
+# Press '2' for Chamber 9
+
+# Option 2: Camera-specific tool
+sudo python3 camera-chaos.py
+# Enter camera IP, select Mystery chamber
 ```
 
 **Duration:** 20 minutes
@@ -249,6 +281,7 @@ sudo python3 bring-da-ruckus.py --target [QWIKCAM_IP] --level ninth
 - Camera-specific impacts
 - Other LAN devices remain unaffected
 - Isolation of camera traffic
+- Monitor shows degradation only for targeted camera IP
 
 **Expected Results:**
 - Only camera traffic disrupted

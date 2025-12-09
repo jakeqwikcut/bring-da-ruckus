@@ -193,9 +193,9 @@ if level == 'shadow':
 ---
 
 ## Repository
-**GitHub**: https://github.com/jakeqwikcut/bring-da-ruckus  
-**Author**: Jake Mammen  
-**Created**: December 2025  
+**GitHub**: https://github.com/jakeqwikcut/bring-da-ruckus
+**Author**: Jake Mammen
+**Created**: December 2025
 **License**: Open Source---
 
 **🥷 Wu-Tang is for the children. Test responsibly. 🥷**

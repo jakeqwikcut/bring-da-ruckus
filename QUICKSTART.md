@@ -1,7 +1,7 @@
 # Quick Start Guide - Bring Da Ruckus
 ## 36 Chambers of Chaos - Wu-Tang Sword Style Edition
 
-**Network Chaos Engineering Toolkit**  
+**Network Chaos Engineering Toolkit**
 **Created by Jake Mammen - 2025**
 
 🥷 **Wu-Tang is for the children. Test responsibly.** 🥷
@@ -46,10 +46,10 @@ Before starting, choose the right tool for your setup:
    ```bash
    # Full version (Ubuntu with netem)
    sudo python3 bring-da-ruckus.py
-   
+
    # OR iptables version (Jetson/no netem)
    sudo python3 bring-da-ruckus-iptables.py
-   
+
    # OR camera-specific
    sudo python3 camera-chaos.py
    ```
