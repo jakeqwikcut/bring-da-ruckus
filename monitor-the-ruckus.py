@@ -217,8 +217,9 @@ class NetworkMonitor:
 
     def display_dashboard(self):
         """Display comprehensive monitoring dashboard"""
-        # Use ANSI escape codes to clear screen and move cursor to top
-        print("\033[2J\033[H", end='')
+        # Move cursor to home position (top-left) without clearing screen
+        print("\033[H", end='')
+        sys.stdout.flush()
         
         print("=" * 80)
         print("                🥷 MONITOR THE RUCKUS - Network Health 🥷")
@@ -340,12 +341,21 @@ class NetworkMonitor:
         
         time.sleep(2)
         
+        # Enter alternate screen buffer and hide cursor (like htop)
+        print("\033[?1049h\033[?25l", end='')
+        sys.stdout.flush()
+        
         try:
             while self.running:
                 self.display_dashboard()
                 time.sleep(interval)
         except KeyboardInterrupt:
-            print("\n\n👋 Monitoring stopped")
+            pass
+        finally:
+            # Exit alternate screen buffer and show cursor
+            print("\033[?1049l\033[?25h", end='')
+            sys.stdout.flush()
+            print("\n👋 Monitoring stopped")
             self.running = False
 
 
